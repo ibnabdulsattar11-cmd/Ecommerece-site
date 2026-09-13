@@ -1,0 +1,13 @@
+{
+  "location": {
+    "searchPlaceholder": "Search for your address...",
+    "searching": "Searching...",
+    "useMyLocation": "Use my current location",
+    "checkingDelivery": "Checking delivery availability...",
+    "notAvailable": "Delivery is not available for this location yet",
+    "availableWithCharge": "Delivery available — {charge} shipping, arrives in ~{days} days",
+    "resolveFailed": "Could not resolve this location, please try again",
+    "geolocationUnsupported": "Your browser does not support location detection",
+    "geolocationDenied": "Location permission denied — search or pick on the map instead"
+  }
+}
