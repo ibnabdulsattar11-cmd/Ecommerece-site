@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "home": "Home",
+    "men": "Men",
+    "women": "Women",
+    "products": "Products",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "account": "Account",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "home": {
+    "heroTitle": "Shop the latest arrivals",
+    "heroSubtitle": "Quality products, delivered to your door.",
+    "shopNow": "Shop Now"
+  },
+  "common": {
+    "loading": "Loading...",
+    "search": "Search products...",
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "products": {
+    "currency": "PKR",
+    "searchPlaceholder": "Search products...",
+    "search": "Search",
+    "sortBy": "Sort by",
+    "sort": {
+      "newest": "Newest",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "rating": "Top Rated",
+      "popular": "Most Popular"
+    },
+    "priceRange": "Price Range",
+    "apply": "Apply",
+    "brand": "Brand",
+    "inStockOnly": "In stock only",
+    "resultsCount": "{count} products found",
+    "noResults": "No products match your filters.",
+    "prev": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}",
+    "sale": "SALE",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock",
+    "color": "Color",
+    "size": "Size",
+    "addToCart": "Add to Cart",
+    "description": "Description",
+    "reviews": "reviews",
+    "relatedProducts": "Related Products",
+    "recommendedForYou": "Recommended for You",
+    "recentlyViewed": "Recently Viewed",
+    "loading": "Loading product...",
+    "notFound": "Product not found."
+  }
+}

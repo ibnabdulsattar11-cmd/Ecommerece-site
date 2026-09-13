@@ -1,0 +1,37 @@
+{
+  "products": {
+    "currency": "روپیه",
+    "searchPlaceholder": "ابحث عن المنتجات...",
+    "search": "بحث",
+    "sortBy": "ترتيب حسب",
+    "sort": {
+      "newest": "الأحدث",
+      "priceAsc": "السعر: من الأقل إلى الأعلى",
+      "priceDesc": "السعر: من الأعلى إلى الأقل",
+      "rating": "الأعلى تقييمًا",
+      "popular": "الأكثر شيوعًا"
+    },
+    "priceRange": "نطاق السعر",
+    "apply": "تطبيق",
+    "brand": "العلامة التجارية",
+    "inStockOnly": "المتوفر فقط",
+    "resultsCount": "تم العثور على {count} منتج",
+    "noResults": "لا توجد منتجات تطابق الفلاتر.",
+    "prev": "السابق",
+    "next": "التالي",
+    "pageOf": "صفحة {page} من {total}",
+    "sale": "تخفيض",
+    "outOfStock": "غير متوفر",
+    "inStock": "متوفر",
+    "color": "اللون",
+    "size": "المقاس",
+    "addToCart": "أضف إلى السلة",
+    "description": "الوصف",
+    "reviews": "تقييمات",
+    "relatedProducts": "منتجات ذات صلة",
+    "recommendedForYou": "موصى به لك",
+    "recentlyViewed": "شوهد مؤخرًا",
+    "loading": "جاري تحميل المنتج...",
+    "notFound": "المنتج غير موجود."
+  }
+}
