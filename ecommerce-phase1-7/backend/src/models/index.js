@@ -17,6 +17,8 @@ const Wishlist = require("./wishlist.model")(sequelize);
 const Return = require("./return.model")(sequelize);
 const Notification = require("./notification.model")(sequelize);
 const DeliveryZone = require("./deliveryZone.model")(sequelize);
+const OrderStatusHistory = require("./orderStatusHistory.model")(sequelize);
+
 
 /* ---------------------- USER ---------------------- */
 User.hasMany(Address, { foreignKey: "userId", onDelete: "CASCADE" });
@@ -71,6 +73,15 @@ ProductVariant.hasMany(CartItem, { foreignKey: "variantId" });
 CartItem.belongsTo(ProductVariant, { foreignKey: "variantId" });
 
 /* ---------------------- ORDER ---------------------- */
+// near the top, with the other requires:
+
+// anywhere in the "ORDER" association block:
+Order.hasMany(OrderStatusHistory, { foreignKey: "orderId", as: "StatusHistory", onDelete: "CASCADE" });
+OrderStatusHistory.belongsTo(Order, { foreignKey: "orderId" });
+
+User.hasMany(OrderStatusHistory, { foreignKey: "changedByAdminId" });
+OrderStatusHistory.belongsTo(User, { foreignKey: "changedByAdminId", as: "changedByAdmin" });
+
 Order.hasMany(OrderItem, { foreignKey: "orderId", onDelete: "CASCADE" });
 OrderItem.belongsTo(Order, { foreignKey: "orderId" });
 
@@ -138,4 +149,9 @@ module.exports = {
   Return,
   Notification,
   DeliveryZone,
+};
+// in module.exports:
+module.exports = {
+  // ...everything already there,
+  OrderStatusHistory,
 };

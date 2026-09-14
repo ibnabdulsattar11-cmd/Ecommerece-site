@@ -33,12 +33,12 @@ app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
-  })
+  }),
 );
 
-// NOTE: Stripe webhook route needs the RAW body, so it must be registered
-// with express.raw() BEFORE express.json() is applied globally.
-// app.use("/api/webhooks", webhookRoutes);
+// 1) Webhook FIRST — raw body parser is scoped inside webhook.routes.js itself
+const webhookRoutes = require("./routes/webhook.routes");
+app.use("/api/webhooks", webhookRoutes);
 
 app.use(express.json({ limit: "10kb" })); // request size limit
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
@@ -56,15 +56,16 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-// app.use("/api/categories", categoryRoutes);
-// app.use("/api/products", productRoutes);
-// app.use("/api/cart", cartRoutes);
-// app.use("/api/wishlist", wishlistRoutes);
-// app.use("/api/location", locationRoutes);
-// app.use("/api/coupons", couponRoutes);
-// app.use("/api/checkout", checkoutRoutes);
-// app.use("/api/orders", orderRoutes);
-// app.use("/api/admin", adminRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/location", locationRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/checkout", checkoutRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/admin/orders", require("./routes/admin/order.routes"));
+app.use("/api/admin/returns", require("./routes/admin/return.routes"));
 
 // 404 handler
 app.use((req, res) => {
