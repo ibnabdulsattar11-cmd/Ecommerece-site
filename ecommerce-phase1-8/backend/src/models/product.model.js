@@ -21,7 +21,7 @@ module.exports = (sequelize) => {
       salePrice: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
       stock: { type: DataTypes.INTEGER, defaultValue: 0 },
       status: {
-        type: DataTypes.ENUM("active", "draft", "out_of_stock", "discontinued"),
+        type: DataTypes.ENUM("active", "draft", "out_of_stock", "INACTIVE" , "discontinued"),
         defaultValue: "active",
       },
       videoUrl: { type: DataTypes.STRING, allowNull: true },

@@ -17,7 +17,7 @@ exports.getProducts = async (req, res, next) => {
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const offset = (page - 1) * limit;
 
-    const where = { status: 'ACTIVE' };
+    const where = { status: 'active' };
     const include = [...includeFull];
 
     // --- Search (bilingual, matches name/desc/sku/brand) ---
@@ -235,7 +235,7 @@ exports.createProduct = async (req, res, next) => {
       {
         nameEn, nameAr, descEn, descAr, sku, brand,
         price, salePrice, stock: stock || 0, categoryId,
-        status: status || 'DRAFT', slug,
+        status: status || 'draft', slug,
       },
       { transaction: t }
     );

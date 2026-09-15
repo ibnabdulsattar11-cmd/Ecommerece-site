@@ -8,8 +8,13 @@ const {
   listProductsRules,
 } = require("../validators/product.validator");
 const validate = require("../middlewares/validate.middleware");
-const authMiddleware = require("../middlewares/auth.middleware");
-const adminMiddleware = require("../middlewares/admin.middleware");
+// FIX (Phase 9): these were being imported as bare default functions, but
+// both middleware files export named objects ({ protect, optionalAuth }
+// and { restrictTo }) — using an object where Express expects a function
+// crashes as soon as any of the routes below are hit.
+const { protect: authMiddleware } = require("../middlewares/auth.middleware");
+const { restrictTo } = require("../middlewares/admin.middleware");
+const adminMiddleware = restrictTo("ADMIN");
 const {
   upload,
   handleProductImageUpload,

@@ -77,7 +77,7 @@ exports.moveToCart = async (req, res, next) => {
     }
 
     const product = await Product.findByPk(productId);
-    if (!product || product.status !== 'ACTIVE') {
+    if (!product || product.status !== 'active') {
       return res.status(404).json({ success: false, message: 'Product no longer available' });
     }
 

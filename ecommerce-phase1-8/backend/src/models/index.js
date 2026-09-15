@@ -18,6 +18,7 @@ const Return = require("./return.model")(sequelize);
 const Notification = require("./notification.model")(sequelize);
 const DeliveryZone = require("./deliveryZone.model")(sequelize);
 const OrderStatusHistory = require("./orderStatusHistory.model")(sequelize);
+const InventoryLog = require("./inventoryLog.model")(sequelize);
 
 
 /* ---------------------- USER ---------------------- */
@@ -62,6 +63,19 @@ Review.belongsTo(Product, { foreignKey: "productId" });
 Product.hasMany(Wishlist, { foreignKey: "productId", onDelete: "CASCADE" });
 Wishlist.belongsTo(Product, { foreignKey: "productId" });
 
+
+// anywhere convenient (e.g. near the PRODUCT block):
+Product.hasMany(InventoryLog, { foreignKey: "productId", onDelete: "CASCADE" });
+InventoryLog.belongsTo(Product, { foreignKey: "productId" });
+
+ProductVariant.hasMany(InventoryLog, { foreignKey: "variantId" });
+InventoryLog.belongsTo(ProductVariant, { foreignKey: "variantId" });
+
+User.hasMany(InventoryLog, { foreignKey: "adjustedByAdminId" });
+InventoryLog.belongsTo(User, { foreignKey: "adjustedByAdminId", as: "adjustedByAdmin" });
+
+
+
 /* ---------------------- CART ---------------------- */
 Cart.hasMany(CartItem, { foreignKey: "cartId", onDelete: "CASCADE" });
 CartItem.belongsTo(Cart, { foreignKey: "cartId" });
@@ -71,6 +85,8 @@ CartItem.belongsTo(Product, { foreignKey: "productId" });
 
 ProductVariant.hasMany(CartItem, { foreignKey: "variantId" });
 CartItem.belongsTo(ProductVariant, { foreignKey: "variantId" });
+
+
 
 /* ---------------------- ORDER ---------------------- */
 // near the top, with the other requires:
@@ -149,9 +165,7 @@ module.exports = {
   Return,
   Notification,
   DeliveryZone,
-};
-// in module.exports:
-module.exports = {
-  // ...everything already there,
   OrderStatusHistory,
+InventoryLog
 };
+

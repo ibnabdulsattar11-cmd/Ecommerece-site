@@ -7,8 +7,10 @@ const {
   updateCategoryRules,
 } = require("../validators/category.validator");
 const validate = require("../middlewares/validate.middleware");
-const authMiddleware = require("../middlewares/auth.middleware");
-const adminMiddleware = require("../middlewares/admin.middleware");
+// FIX (Phase 9): see product.routes.js — same bare-import bug, same fix.
+const { protect: authMiddleware } = require("../middlewares/auth.middleware");
+const { restrictTo } = require("../middlewares/admin.middleware");
+const adminMiddleware = restrictTo("ADMIN");
 
 // Public
 router.get("/", categoryController.getCategories);

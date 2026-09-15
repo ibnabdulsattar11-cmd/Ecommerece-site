@@ -9,7 +9,9 @@ const {
 const validate = require("../middlewares/validate.middleware");
 const optionalAuth = require("../middlewares/optionalAuth.middleware");
 const guestCart = require("../middlewares/guestCart.middleware");
-const authMiddleware = require("../middlewares/auth.middleware");
+// FIX (Phase 9): same bare-import bug as product/category routes — this
+// broke POST /api/cart/merge (called right after login) specifically.
+const { protect: authMiddleware } = require("../middlewares/auth.middleware");
 
 // Every cart route: try to decode a JWT if present, else fall back to
 // the guest cookie -> so the same endpoints work logged-in or not.
