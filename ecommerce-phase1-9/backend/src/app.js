@@ -11,19 +11,22 @@ const errorHandler = require("./middlewares/errorHandler.middleware");
 const { apiLimiter } = require("./middlewares/rateLimit.middleware");
 const passport = require("./config/passport");
 
-const authRoutes = require("./routes/auth.routes");
-const userRoutes = require("./routes/user.routes");
+
+
 
 // Route imports (added incrementally as modules are built)
-// const categoryRoutes = require("./routes/category.routes");
-// const productRoutes = require("./routes/product.routes");
-// const cartRoutes = require("./routes/cart.routes");
-// const wishlistRoutes = require("./routes/wishlist.routes");
-// const locationRoutes = require("./routes/location.routes");
-// const couponRoutes = require("./routes/coupon.routes");
-// const checkoutRoutes = require("./routes/checkout.routes");
-// const orderRoutes = require("./routes/order.routes");
-// const webhookRoutes = require("./routes/webhook.routes");
+const authRoutes = require("./routes/auth.routes");
+const userRoutes = require("./routes/user.routes");
+const analyticsRoutes = require('./routes/analytics.routes');
+const categoryRoutes = require("./routes/category.routes");
+const productRoutes = require("./routes/product.routes");
+const cartRoutes = require("./routes/cart.routes");
+const wishlistRoutes = require("./routes/wishlist.routes");
+const locationRoutes = require("./routes/location.routes");
+const couponRoutes = require("./routes/coupon.routes");
+const checkoutRoutes = require("./routes/checkout.routes");
+const orderRoutes = require("./routes/order.routes");
+const webhookRoutes = require("./routes/webhook.routes");
 // const adminRoutes = require("./routes/admin.routes");
 
 const app = express();
@@ -37,7 +40,6 @@ app.use(
 );
 
 // 1) Webhook FIRST — raw body parser is scoped inside webhook.routes.js itself
-const webhookRoutes = require("./routes/webhook.routes");
 app.use("/api/webhooks", webhookRoutes);
 
 app.use(express.json({ limit: "10kb" })); // request size limit
@@ -69,6 +71,8 @@ app.use("/api/admin/returns", require("./routes/admin/return.routes"));
 app.use("/api/admin/dashboard", require("./routes/admin/dashboard.routes"));
 app.use("/api/admin/customers", require("./routes/admin/customer.routes"));
 app.use("/api/admin/inventory", require("./routes/admin/inventory.routes"));
+app.use('/api/admin/analytics', analyticsRoutes);
+
 
 // 404 handler
 app.use((req, res) => {
