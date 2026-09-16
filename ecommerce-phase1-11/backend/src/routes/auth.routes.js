@@ -21,13 +21,19 @@ const {
 const validate = require("../middlewares/validate.middleware");
 const { protect } = require("../middlewares/auth.middleware");
 const { authLimiter } = require("../middlewares/rateLimit.middleware");
+const csrfOriginCheck = require("../middlewares/csrfOriginCheck.middleware"); // Phase 11
 
 const router = express.Router();
 
 router.post("/register", authLimiter, registerValidator, validate, register);
 router.post("/login", authLimiter, loginValidator, validate, login);
-router.post("/logout", logout);
-router.post("/refresh", refresh);
+
+// FIX (Phase 11): these two authenticate purely off the httpOnly cookie —
+// no Authorization header — which was previously both unrated-limited AND
+// unchecked for cross-origin abuse. See csrfOriginCheck.middleware.js for
+// why this is defense-in-depth rather than the primary protection.
+router.post("/logout", authLimiter, csrfOriginCheck, logout);
+router.post("/refresh", authLimiter, csrfOriginCheck, refresh);
 
 router.post("/verify-email", verifyEmail);
 router.post(

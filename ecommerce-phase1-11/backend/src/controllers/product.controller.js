@@ -110,7 +110,7 @@ exports.getProducts = async (req, res, next) => {
 exports.getProductBySlug = async (req, res, next) => {
   try {
     const product = await Product.findOne({
-      where: { slug: req.params.slug, status: 'ACTIVE' },
+      where: { slug: req.params.slug, status: 'active' },
       include: includeFull,
     });
 
@@ -125,7 +125,7 @@ exports.getProductBySlug = async (req, res, next) => {
     const related = await Product.findAll({
       where: {
         categoryId: product.categoryId,
-        status: 'ACTIVE',
+        status: 'active',
         id: { [Op.ne]: product.id },
       },
       include: [{ model: ProductImage, as: 'images', limit: 1 }],
@@ -137,7 +137,7 @@ exports.getProductBySlug = async (req, res, next) => {
     // swap for a real recommendation engine later if needed)
     const recommended = await Product.findAll({
       where: {
-        status: 'ACTIVE',
+        status: 'active',
         id: { [Op.notIn]: [product.id, ...related.map((r) => r.id)] },
       },
       include: [{ model: ProductImage, as: 'images', limit: 1 }],
@@ -167,7 +167,7 @@ exports.getRecentlyViewed = async (req, res, next) => {
     }
 
     const products = await Product.findAll({
-      where: { id: { [Op.in]: ids }, status: 'ACTIVE' },
+      where: { id: { [Op.in]: ids }, status: 'active' },
       include: [{ model: ProductImage, as: 'images', limit: 1 }],
     });
 
@@ -187,7 +187,7 @@ exports.getFilterMeta = async (req, res, next) => {
   try {
     const brands = await Product.findAll({
       attributes: [[sequelize.fn('DISTINCT', sequelize.col('brand')), 'brand']],
-      where: { status: 'ACTIVE', brand: { [Op.ne]: null } },
+      where: { status: 'active', brand: { [Op.ne]: null } },
       raw: true,
     });
 
@@ -196,7 +196,7 @@ exports.getFilterMeta = async (req, res, next) => {
         [sequelize.fn('MIN', sequelize.col('price')), 'minPrice'],
         [sequelize.fn('MAX', sequelize.col('price')), 'maxPrice'],
       ],
-      where: { status: 'ACTIVE' },
+      where: { status: 'active' },
       raw: true,
     });
 

@@ -33,7 +33,9 @@
     "sharp": "^0.33.4",
     "stripe": "^16.8.0",
     "uuid": "^10.0.0",
-    "xss-clean": "^0.1.4"
+    "xss-clean": "^0.1.4",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.4",

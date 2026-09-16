@@ -1,14 +1,12 @@
 const ApiError = require("../utils/ApiError");
+const logger = require("../utils/logger");
 
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   let error = err;
 
   // Sequelize validation errors
-  if (
-    error.name === "SequelizeValidationError" ||
-    error.name === "SequelizeUniqueConstraintError"
-  ) {
+  if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
     const messages = error.errors.map((e) => e.message);
     error = new ApiError(400, "Validation failed", messages);
   }
@@ -29,6 +27,7 @@ const errorHandler = (err, req, res, next) => {
     success: false,
     message,
     errors: error.errors || [],
+    requestId: req.id, // lets the client report a specific failing request
   };
 
   if (process.env.NODE_ENV === "development") {
@@ -36,7 +35,14 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (statusCode >= 500) {
-    console.error("[UNHANDLED ERROR]", err);
+    logger.error("Unhandled error", {
+      requestId: req.id,
+      method: req.method,
+      path: req.originalUrl,
+      statusCode,
+      message: err.message,
+      stack: err.stack,
+    });
   }
 
   res.status(statusCode).json(response);
