@@ -10,4 +10,4 @@ const refreshCookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
-module.exports = { refreshCookieOptions };
+export default { refreshCookieOptions };

@@ -1,25 +1,44 @@
-const { sequelize } = require("../config/db");
+import { sequelize } from "../config/db.js";
 
-const User = require("./user.model")(sequelize);
-const Address = require("./address.model")(sequelize);
-const Category = require("./category.model")(sequelize);
-const Product = require("./product.model")(sequelize);
-const ProductVariant = require("./productVariant.model")(sequelize);
-const ProductImage = require("./productImage.model")(sequelize);
-const Cart = require("./cart.model")(sequelize);
-const CartItem = require("./cartItem.model")(sequelize);
-const Order = require("./order.model")(sequelize);
-const OrderItem = require("./orderItem.model")(sequelize);
-const Coupon = require("./coupon.model")(sequelize);
-const CouponUsage = require("./couponUsage.model")(sequelize);
-const Review = require("./review.model")(sequelize);
-const Wishlist = require("./wishlist.model")(sequelize);
-const Return = require("./return.model")(sequelize);
-const Notification = require("./notification.model")(sequelize);
-const DeliveryZone = require("./deliveryZone.model")(sequelize);
-const OrderStatusHistory = require("./orderStatusHistory.model")(sequelize);
-const InventoryLog = require("./inventoryLog.model")(sequelize);
+import UserFactory from "./user.model.js";
+import AddressFactory from "./address.model.js";
+import CategoryFactory from "./category.model.js";
+import ProductFactory from "./product.model.js";
+import ProductVariantFactory from "./productVariant.model.js";
+import ProductImageFactory from "./productImage.model.js";
+import CartFactory from "./cart.model.js";
+import CartItemFactory from "./cartItem.model.js";
+import OrderFactory from "./order.model.js";
+import OrderItemFactory from "./orderItem.model.js";
+import CouponFactory from "./coupon.model.js";
+import CouponUsageFactory from "./couponUsage.model.js";
+import ReviewFactory from "./review.model.js";
+import WishlistFactory from "./wishlist.model.js";
+import ReturnFactory from "./return.model.js";
+import NotificationFactory from "./notification.model.js";
+import DeliveryZoneFactory from "./deliveryZone.model.js";
+import OrderStatusHistoryFactory from "./orderStatusHistory.model.js";
+import InventoryLogFactory from "./inventoryLog.model.js";
 
+const User = UserFactory(sequelize);
+const Address = AddressFactory(sequelize);
+const Category = CategoryFactory(sequelize);
+const Product = ProductFactory(sequelize);
+const ProductVariant = ProductVariantFactory(sequelize);
+const ProductImage = ProductImageFactory(sequelize);
+const Cart = CartFactory(sequelize);
+const CartItem = CartItemFactory(sequelize);
+const Order = OrderFactory(sequelize);
+const OrderItem = OrderItemFactory(sequelize);
+const Coupon = CouponFactory(sequelize);
+const CouponUsage = CouponUsageFactory(sequelize);
+const Review = ReviewFactory(sequelize);
+const Wishlist = WishlistFactory(sequelize);
+const Return = ReturnFactory(sequelize);
+const Notification = NotificationFactory(sequelize);
+const DeliveryZone = DeliveryZoneFactory(sequelize);
+const OrderStatusHistory = OrderStatusHistoryFactory(sequelize);
+const InventoryLog = InventoryLogFactory(sequelize);
 
 /* ---------------------- USER ---------------------- */
 User.hasMany(Address, { foreignKey: "userId", onDelete: "CASCADE" });
@@ -63,7 +82,6 @@ Review.belongsTo(Product, { foreignKey: "productId" });
 Product.hasMany(Wishlist, { foreignKey: "productId", onDelete: "CASCADE" });
 Wishlist.belongsTo(Product, { foreignKey: "productId" });
 
-
 // anywhere convenient (e.g. near the PRODUCT block):
 Product.hasMany(InventoryLog, { foreignKey: "productId", onDelete: "CASCADE" });
 InventoryLog.belongsTo(Product, { foreignKey: "productId" });
@@ -72,9 +90,10 @@ ProductVariant.hasMany(InventoryLog, { foreignKey: "variantId" });
 InventoryLog.belongsTo(ProductVariant, { foreignKey: "variantId" });
 
 User.hasMany(InventoryLog, { foreignKey: "adjustedByAdminId" });
-InventoryLog.belongsTo(User, { foreignKey: "adjustedByAdminId", as: "adjustedByAdmin" });
-
-
+InventoryLog.belongsTo(User, {
+  foreignKey: "adjustedByAdminId",
+  as: "adjustedByAdmin",
+});
 
 /* ---------------------- CART ---------------------- */
 Cart.hasMany(CartItem, { foreignKey: "cartId", onDelete: "CASCADE" });
@@ -86,17 +105,22 @@ CartItem.belongsTo(Product, { foreignKey: "productId" });
 ProductVariant.hasMany(CartItem, { foreignKey: "variantId" });
 CartItem.belongsTo(ProductVariant, { foreignKey: "variantId" });
 
-
-
 /* ---------------------- ORDER ---------------------- */
 // near the top, with the other requires:
 
 // anywhere in the "ORDER" association block:
-Order.hasMany(OrderStatusHistory, { foreignKey: "orderId", as: "StatusHistory", onDelete: "CASCADE" });
+Order.hasMany(OrderStatusHistory, {
+  foreignKey: "orderId",
+  as: "StatusHistory",
+  onDelete: "CASCADE",
+});
 OrderStatusHistory.belongsTo(Order, { foreignKey: "orderId" });
 
 User.hasMany(OrderStatusHistory, { foreignKey: "changedByAdminId" });
-OrderStatusHistory.belongsTo(User, { foreignKey: "changedByAdminId", as: "changedByAdmin" });
+OrderStatusHistory.belongsTo(User, {
+  foreignKey: "changedByAdminId",
+  as: "changedByAdmin",
+});
 
 Order.hasMany(OrderItem, { foreignKey: "orderId", onDelete: "CASCADE" });
 OrderItem.belongsTo(Order, { foreignKey: "orderId" });
@@ -146,7 +170,7 @@ Category.belongsToMany(Coupon, {
 Coupon.belongsToMany(User, { through: "coupon_users", foreignKey: "couponId" });
 User.belongsToMany(Coupon, { through: "coupon_users", foreignKey: "userId" });
 
-module.exports = {
+export default {
   sequelize,
   User,
   Address,
@@ -166,6 +190,5 @@ module.exports = {
   Notification,
   DeliveryZone,
   OrderStatusHistory,
-InventoryLog
+  InventoryLog,
 };
-

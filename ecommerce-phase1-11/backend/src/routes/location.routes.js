@@ -1,7 +1,6 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const {
+import {
   reverseGeocode,
   searchAddress,
   checkDelivery,
@@ -10,20 +9,24 @@ const {
   createZone,
   updateZone,
   deleteZone,
-} = require("../controllers/location.controller");
+} from "../controllers/location.controller.js";
 
-const {
+import {
   reverseGeocodeRules,
   searchRules,
   deliveryCheckRules,
   zoneRules,
-} = require("../validators/location.validator");
+} from "../validators/location.validator.js";
 
-const validate = require("../middlewares/validate.middleware");
-const { protect } = require("../middlewares/auth.middleware");
-const { restrictTo } = require("../middlewares/admin.middleware");
-const { geoLimiter } = require("../middlewares/geoRateLimit.middleware");
+import validate from "../middlewares/validate.middleware.js";
 
+import { protect } from "../middlewares/auth.middleware.js";
+
+import restrictTo from "../middlewares/admin.middleware.js";
+
+import { geoLimiter } from "../middlewares/geoRateLimit.middleware.js";
+
+const router = express.Router();
 /* ---------------------------- Public ---------------------------- */
 router.get(
   "/reverse-geocode",
@@ -56,4 +59,4 @@ router.patch(
 );
 router.delete("/admin/zones/:id", protect, restrictTo("ADMIN"), deleteZone);
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const { query, body } = require("express-validator");
+import { query, body } from "express-validator";
 
 const reverseGeocodeRules = [
   query("lat").notEmpty().withMessage("lat is required").isFloat({ min: -90, max: 90 }),
@@ -34,4 +34,4 @@ const zoneRules = [
   body("estimatedDeliveryDays").optional().isInt({ min: 0 }),
 ];
 
-module.exports = { reverseGeocodeRules, searchRules, deliveryCheckRules, zoneRules };
+export default { reverseGeocodeRules, searchRules, deliveryCheckRules, zoneRules };

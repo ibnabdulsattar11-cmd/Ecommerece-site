@@ -1,22 +1,27 @@
-const express = require("express");
-const {
-  getProfile,
-  updateProfile,
-  uploadProfileImage,
-  getOrderHistory,
-  listAddresses,
-  createAddress,
-  updateAddress,
-  deleteAddress,
-  setDefaultAddress,
-} = require("../controllers/user.controller");
-const {
-  updateProfileValidator,
-  addressValidator,
-} = require("../validators/user.validator");
-const validate = require("../middlewares/validate.middleware");
-const { protect } = require("../middlewares/auth.middleware");
-const upload = require("../middlewares/upload.middleware");
+import express from "express";
+
+import {
+    getProfile,
+    updateProfile,
+    uploadProfileImage,
+    getOrderHistory,
+    listAddresses,
+    createAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
+} from "../controllers/user.controller.js";
+
+import {
+    updateProfileValidator,
+    addressValidator,
+} from "../validators/user.validator.js";
+
+import validate from "../middlewares/validate.middleware.js";
+
+import { protect } from "../middlewares/auth.middleware.js";
+
+import upload from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
@@ -33,4 +38,4 @@ router.patch("/me/addresses/:id", addressValidator, validate, updateAddress);
 router.delete("/me/addresses/:id", deleteAddress);
 router.patch("/me/addresses/:id/default", setDefaultAddress);
 
-module.exports = router;
+export default router;

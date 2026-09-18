@@ -1,9 +1,20 @@
-const { body } = require("express-validator");
+import { body } from "express-validator";
 
 const registerValidator = [
-  body("name").trim().notEmpty().withMessage("Name is required").isLength({ max: 100 }),
-  body("email").optional().isEmail().withMessage("Invalid email").normalizeEmail(),
-  body("phone").optional().isMobilePhone("any").withMessage("Invalid phone number"),
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ max: 100 }),
+  body("email")
+    .optional()
+    .isEmail()
+    .withMessage("Invalid email")
+    .normalizeEmail(),
+  body("phone")
+    .optional()
+    .isMobilePhone("any")
+    .withMessage("Invalid phone number"),
   body("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters")
@@ -23,7 +34,10 @@ const loginValidator = [
 ];
 
 const forgotPasswordValidator = [
-  body("email").isEmail().withMessage("Valid email is required").normalizeEmail(),
+  body("email")
+    .isEmail()
+    .withMessage("Valid email is required")
+    .normalizeEmail(),
 ];
 
 const resetPasswordValidator = [
@@ -36,7 +50,9 @@ const resetPasswordValidator = [
 ];
 
 const changePasswordValidator = [
-  body("currentPassword").notEmpty().withMessage("Current password is required"),
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
   body("newPassword")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters")
@@ -44,7 +60,7 @@ const changePasswordValidator = [
     .withMessage("Password must contain a number"),
 ];
 
-module.exports = {
+export default  {
   registerValidator,
   loginValidator,
   forgotPasswordValidator,

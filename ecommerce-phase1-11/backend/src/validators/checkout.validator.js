@@ -1,4 +1,4 @@
-const { body } = require("express-validator");
+import { body } from "express-validator";
 
 const checkoutRules = [
   body("addressId").optional().isUUID(),
@@ -6,10 +6,14 @@ const checkoutRules = [
   body("shippingAddress.name").if(body("shippingAddress").exists()).notEmpty(),
   body("shippingAddress.phone").if(body("shippingAddress").exists()).notEmpty(),
   body("shippingAddress.email").if(body("shippingAddress").exists()).isEmail(),
-  body("shippingAddress.country").if(body("shippingAddress").exists()).notEmpty(),
+  body("shippingAddress.country")
+    .if(body("shippingAddress").exists())
+    .notEmpty(),
   body("shippingAddress.city").if(body("shippingAddress").exists()).notEmpty(),
   body("shippingAddress.area").if(body("shippingAddress").exists()).notEmpty(),
-  body("shippingAddress.street").if(body("shippingAddress").exists()).notEmpty(),
+  body("shippingAddress.street")
+    .if(body("shippingAddress").exists())
+    .notEmpty(),
   body("couponCode").optional().trim(),
   body().custom((value) => {
     if (!value.addressId && !value.shippingAddress) {
@@ -19,12 +23,18 @@ const checkoutRules = [
   }),
 ];
 
-const validateCouponRules = [body("code").trim().notEmpty().withMessage("Coupon code is required")];
+const validateCouponRules = [
+  body("code").trim().notEmpty().withMessage("Coupon code is required"),
+];
 
 const couponRules = [
   body("code").notEmpty().withMessage("Code is required"),
-  body("type").isIn(["percentage", "fixed"]).withMessage("type must be percentage or fixed"),
-  body("value").isFloat({ min: 0 }).withMessage("value must be a positive number"),
+  body("type")
+    .isIn(["percentage", "fixed"])
+    .withMessage("type must be percentage or fixed"),
+  body("value")
+    .isFloat({ min: 0 })
+    .withMessage("value must be a positive number"),
   body("minOrder").optional().isFloat({ min: 0 }),
   body("maxDiscount").optional({ nullable: true }).isFloat({ min: 0 }),
   body("expiryDate").isISO8601().withMessage("expiryDate must be a valid date"),
@@ -33,4 +43,4 @@ const couponRules = [
   body("isUserSpecific").optional().isBoolean(),
 ];
 
-module.exports = { checkoutRules, validateCouponRules, couponRules };
+export default { checkoutRules, validateCouponRules, couponRules };

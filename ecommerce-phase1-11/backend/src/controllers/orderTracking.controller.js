@@ -1,8 +1,10 @@
-const { Order } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const orderTrackingService = require("../services/orderTracking.service");
+import { Order } from "../models/index.js";
 
+import ApiError from "../utils/ApiError.js";
+
+import ApiResponse from "../utils/ApiResponse.js";
+
+import orderTrackingService from "../services/orderTracking.service.js";
 // POST /api/orders/:id/cancel  { reason? }
 const cancelOrder = async (req, res) => {
   const order = await Order.findOne({ where: { id: req.params.id, userId: req.user.id } });
@@ -28,4 +30,4 @@ const requestReturn = async (req, res) => {
   res.status(201).json(new ApiResponse(201, returnRequest, "Return request submitted"));
 };
 
-module.exports = { cancelOrder, requestReturn };
+export default { cancelOrder, requestReturn };

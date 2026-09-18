@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -95,7 +95,7 @@ const sendReviewRequestEmail = async (user, order) => {
   });
 };
 
-module.exports = {
+export default {
   sendEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,

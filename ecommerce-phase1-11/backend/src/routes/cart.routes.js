@@ -1,18 +1,23 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const cartController = require("../controllers/cart.controller");
-const {
-  addItemRules,
-  updateQuantityRules,
-} = require("../validators/cart.validator");
-const validate = require("../middlewares/validate.middleware");
-const optionalAuth = require("../middlewares/optionalAuth.middleware");
-const guestCart = require("../middlewares/guestCart.middleware");
+import cartController from "../controllers/cart.controller.js";
+
+import {
+    addItemRules,
+    updateQuantityRules,
+} from "../validators/cart.validator.js";
+
+import validate from "../middlewares/validate.middleware.js";
+
+import optionalAuth from "../middlewares/optionalAuth.middleware.js";
+
+import guestCart from "../middlewares/guestCart.middleware.js";
+
 // FIX (Phase 9): same bare-import bug as product/category routes — this
 // broke POST /api/cart/merge (called right after login) specifically.
-const { protect: authMiddleware } = require("../middlewares/auth.middleware");
+import { protect as authMiddleware } from "../middlewares/auth.middleware.js";
 
+const router = express.Router();
 // Every cart route: try to decode a JWT if present, else fall back to
 // the guest cookie -> so the same endpoints work logged-in or not.
 router.use(optionalAuth, guestCart);
@@ -31,4 +36,4 @@ router.delete("/", cartController.clearCart);
 // Merge requires an actual logged-in user (strict auth), called right after login
 router.post("/merge", authMiddleware, cartController.mergeCart);
 
-module.exports = router;
+export default router;

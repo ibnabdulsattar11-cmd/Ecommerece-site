@@ -1,4 +1,4 @@
-const crypto = require("crypto");
+import crypto from "node:crypto";
 
 const GUEST_COOKIE_NAME = "guest_cart_token";
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -9,26 +9,28 @@ const COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
  * middleware) it falls back to a guestToken cookie, creating one if needed.
  * Cart controller then looks up the cart by req.user.id OR req.guestToken.
  */
-module.exports = (req, res, next) => {
-  if (req.user) {
-    // logged-in requests don't need a guest token
-    return next();
-  }
+export default (req, res, next) => {
+    if (req.user) {
+        // logged-in requests don't need a guest token
+        return next();
+    }
 
-  let token = req.cookies?.[GUEST_COOKIE_NAME];
+    let token = req.cookies?.[GUEST_COOKIE_NAME];
 
-  if (!token) {
-    token = crypto.randomBytes(24).toString("hex");
-    res.cookie(GUEST_COOKIE_NAME, token, {
-      maxAge: COOKIE_MAX_AGE,
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
-  }
+    if (!token) {
+        token = crypto.randomBytes(24).toString("hex");
 
-  req.guestToken = token;
-  next();
+        res.cookie(GUEST_COOKIE_NAME, token, {
+            maxAge: COOKIE_MAX_AGE,
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+        });
+    }
+
+    req.guestToken = token;
+
+    next();
 };
 
-module.exports.GUEST_COOKIE_NAME = GUEST_COOKIE_NAME;
+export { GUEST_COOKIE_NAME };

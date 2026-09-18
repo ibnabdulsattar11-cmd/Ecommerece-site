@@ -1,7 +1,10 @@
-const { Review, Product, User } = require("../../models");
-const ApiError = require("../../utils/ApiError");
-const ApiResponse = require("../../utils/ApiResponse");
-const { recomputeProductRating } = require("../../services/review.service");
+import { Review, Product, User } from "../../models/index.js";
+
+import ApiError from "../../utils/ApiError.js";
+
+import ApiResponse from "../../utils/ApiResponse.js";
+
+import { recomputeProductRating } from "../../services/review.service.js";
 
 // GET /api/admin/reviews?status=pending&page=&limit=
 const listReviews = async (req, res) => {
@@ -22,7 +25,12 @@ const listReviews = async (req, res) => {
   });
 
   const response = new ApiResponse(200, rows);
-  response.pagination = { page, limit, total: count, totalPages: Math.ceil(count / limit) };
+  response.pagination = {
+    page,
+    limit,
+    total: count,
+    totalPages: Math.ceil(count / limit),
+  };
   res.status(200).json(response);
 };
 
@@ -36,7 +44,9 @@ const updateReviewStatus = async (req, res) => {
 
   await recomputeProductRating(review.productId);
 
-  res.status(200).json(new ApiResponse(200, review, `Review ${req.body.status}`));
+  res
+    .status(200)
+    .json(new ApiResponse(200, review, `Review ${req.body.status}`));
 };
 
-module.exports = { listReviews, updateReviewStatus };
+export default { listReviews, updateReviewStatus };

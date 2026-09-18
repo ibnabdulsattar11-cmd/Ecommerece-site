@@ -1,5 +1,13 @@
-const { Op, fn, col, literal } = require("sequelize");
-const { sequelize, Order, OrderItem, Product, User, Review, Return } = require("../models");
+import { Op, fn, col, literal } from "sequelize";
+import {
+  sequelize,
+  Order,
+  OrderItem,
+  Product,
+  User,
+  Review,
+  Return,
+} from "../models";
 
 // Orders in these statuses represent real, counted revenue. "cancelled"
 // orders never collected money (or were refunded) so they're excluded.
@@ -10,7 +18,10 @@ const REVENUE_EXCLUDED_STATUSES = ["cancelled"];
 
 const getSummary = async () => {
   const [revenueRow] = await Order.findAll({
-    attributes: [[fn("COALESCE", fn("SUM", col("total")), 0), "totalRevenue"], [fn("COUNT", col("id")), "orderCount"]],
+    attributes: [
+      [fn("COALESCE", fn("SUM", col("total")), 0), "totalRevenue"],
+      [fn("COUNT", col("id")), "orderCount"],
+    ],
     where: { status: { [Op.notIn]: REVENUE_EXCLUDED_STATUSES } },
     raw: true,
   });
@@ -29,9 +40,14 @@ const getSummary = async () => {
   });
 
   const pendingReviews = await Review.count({ where: { status: "pending" } });
-  const pendingReturns = await Return.count({ where: { status: ["requested", "approved", "received"] } });
+  const pendingReturns = await Return.count({
+    where: { status: ["requested", "approved", "received"] },
+  });
 
-  const lowStockThreshold = parseInt(process.env.LOW_STOCK_THRESHOLD || "5", 10);
+  const lowStockThreshold = parseInt(
+    process.env.LOW_STOCK_THRESHOLD || "5",
+    10,
+  );
   const lowStockCount = await Product.count({
     where: { status: "active", stock: { [Op.lte]: lowStockThreshold } },
   });
@@ -39,7 +55,9 @@ const getSummary = async () => {
   return {
     totalRevenue: parseFloat(revenueRow.totalRevenue),
     orderCount: parseInt(revenueRow.orderCount, 10),
-    ordersByStatus: Object.fromEntries(ordersByStatus.map((r) => [r.status, parseInt(r.count, 10)])),
+    ordersByStatus: Object.fromEntries(
+      ordersByStatus.map((r) => [r.status, parseInt(r.count, 10)]),
+    ),
     customersCount,
     newCustomersThisWeek,
     pendingReviews,
@@ -68,7 +86,11 @@ const getRevenueTimeseries = async (days = 30) => {
     raw: true,
   });
 
-  return rows.map((r) => ({ date: r.date, revenue: parseFloat(r.revenue), orders: parseInt(r.orders, 10) }));
+  return rows.map((r) => ({
+    date: r.date,
+    revenue: parseFloat(r.revenue),
+    orders: parseInt(r.orders, 10),
+  }));
 };
 
 // Best sellers by units sold + revenue generated, from OrderItem (which
@@ -81,7 +103,13 @@ const getTopProducts = async (limit = 10) => {
       [fn("SUM", col("quantity")), "unitsSold"],
       [fn("SUM", literal(`"quantity" * "paidUnitPrice"`)), "revenue"],
     ],
-    include: [{ model: Order, where: { status: { [Op.notIn]: REVENUE_EXCLUDED_STATUSES } }, attributes: [] }],
+    include: [
+      {
+        model: Order,
+        where: { status: { [Op.notIn]: REVENUE_EXCLUDED_STATUSES } },
+        attributes: [],
+      },
+    ],
     group: ["OrderItem.productId"],
     order: [[literal('"unitsSold"'), "DESC"]],
     limit,
@@ -89,7 +117,10 @@ const getTopProducts = async (limit = 10) => {
   });
 
   const productIds = rows.map((r) => r.productId);
-  const products = await Product.findAll({ where: { id: productIds }, attributes: ["id", "nameEn", "slug", "stock"] });
+  const products = await Product.findAll({
+    where: { id: productIds },
+    attributes: ["id", "nameEn", "slug", "stock"],
+  });
   const productById = Object.fromEntries(products.map((p) => [p.id, p]));
 
   return rows.map((r) => ({
@@ -117,4 +148,10 @@ const getLowStockProducts = async (limit = 20) => {
   });
 };
 
-module.exports = { getSummary, getRevenueTimeseries, getTopProducts, getRecentOrders, getLowStockProducts };
+export default{
+  getSummary,
+  getRevenueTimeseries,
+  getTopProducts,
+  getRecentOrders,
+  getLowStockProducts,
+};

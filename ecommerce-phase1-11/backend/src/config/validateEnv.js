@@ -26,24 +26,34 @@ const RECOMMENDED_VARS = [
 const validateEnv = () => {
   const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
   if (missing.length) {
-    console.error("❌ Missing required environment variables:", missing.join(", "));
+    console.error(
+      "❌ Missing required environment variables:",
+      missing.join(", "),
+    );
     console.error("   Check .env against .env.example, then restart.");
     process.exit(1);
   }
 
   const weakSecret = ["JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET"].filter(
-    (key) => process.env[key] && process.env[key].length < 32
+    (key) => process.env[key] && process.env[key].length < 32,
   );
   if (weakSecret.length && process.env.NODE_ENV === "production") {
-    console.error("❌ These secrets are too short for production (need 32+ chars):", weakSecret.join(", "));
+    console.error(
+      "❌ These secrets are too short for production (need 32+ chars):",
+      weakSecret.join(", "),
+    );
     process.exit(1);
   }
 
-  const missingRecommended = RECOMMENDED_VARS.filter((key) => !process.env[key]);
+  const missingRecommended = RECOMMENDED_VARS.filter(
+    (key) => !process.env[key],
+  );
   if (missingRecommended.length) {
-    console.warn("⚠️  Missing recommended environment variables (related features will fail at runtime):");
+    console.warn(
+      "⚠️  Missing recommended environment variables (related features will fail at runtime):",
+    );
     console.warn("   " + missingRecommended.join(", "));
   }
 };
 
-module.exports = validateEnv;
+export default validateEnv;

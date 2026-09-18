@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import  jwt from "jsonwebtoken";
 
 /**
  * Unlike the strict auth.middleware.js from Phase 2 (which rejects
@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
  * access token is present it sets req.user; otherwise it just continues
  * so guestCart.middleware.js can take over.
  */
-module.exports = (req, res, next) => {
+export default (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.split(" ")[1]

@@ -1,4 +1,4 @@
-const ApiError = require("../utils/ApiError");
+import ApiError from "../utils/ApiError";
 
 /**
  * `POST /api/auth/refresh` and `/api/auth/logout` authenticate purely via
@@ -30,4 +30,4 @@ const csrfOriginCheck = (req, res, next) => {
   next();
 };
 
-module.exports = csrfOriginCheck;
+export default csrfOriginCheck;

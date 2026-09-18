@@ -1,4 +1,4 @@
-const rateLimit = require("express-rate-limit");
+import rateLimit from ("express-rate-limit");
 
 // The general `apiLimiter` in app.js is too generous for geocoding — those
 // calls proxy to Nominatim's free public API, which has a strict usage
@@ -15,4 +15,4 @@ const geoLimiter = rateLimit({
   },
 });
 
-module.exports = { geoLimiter };
+export default { geoLimiter };

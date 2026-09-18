@@ -1,4 +1,4 @@
-const { Review, Product, OrderItem, Order } = require("../models");
+import { Review, Product, OrderItem, Order } from "../models";
 
 // A review is "verified purchase" if the reviewer has at least one
 // DELIVERED order containing this product — checked at review-creation
@@ -33,4 +33,4 @@ const recomputeProductRating = async (productId) => {
   );
 };
 
-module.exports = { isVerifiedPurchase, recomputeProductRating };
+export default { isVerifiedPurchase, recomputeProductRating };

@@ -1,4 +1,4 @@
-const stripe = require("../config/stripe"); // from Phase 6
+import stripe from "../config/stripe"; // from Phase 6
 
 /**
  * Issues a refund against a PaymentIntent. Omit `amount` for a full refund;
@@ -11,4 +11,4 @@ const refundPaymentIntent = async (paymentIntentId, amount) => {
   return stripe.refunds.create(params);
 };
 
-module.exports = { refundPaymentIntent };
+export default { refundPaymentIntent };

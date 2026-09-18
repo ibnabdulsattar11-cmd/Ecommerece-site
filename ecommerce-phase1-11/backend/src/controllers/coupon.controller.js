@@ -1,9 +1,14 @@
-const { Coupon, CartItem } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const { findOrCreateCart } = require("../services/cart.service"); // from Phase 4
-const checkoutService = require("../services/checkout.service");
-const couponService = require("../services/coupon.service");
+import { Coupon, CartItem } from "../models/index.js";
+
+import ApiError from "../utils/ApiError.js";
+
+import ApiResponse from "../utils/ApiResponse.js";
+
+import { findOrCreateCart } from "../services/cart.service.js";
+
+import checkoutService from "../services/checkout.service.js";
+
+import couponService from "../services/coupon.service.js";
 
 // POST /api/coupons/validate  { code }
 // Validates against the caller's actual live cart — never a client-supplied
@@ -15,7 +20,10 @@ const validate = async (req, res) => {
   const cartItems = await CartItem.findAll({ where: { cartId: cart.id } });
   const items = await checkoutService.priceCartItems(cartItems);
 
-  const result = await couponService.validateCoupon(code, { userId: req.user?.id, items });
+  const result = await couponService.validateCoupon(code, {
+    userId: req.user?.id,
+    items,
+  });
 
   res.status(200).json(
     new ApiResponse(200, {
@@ -23,7 +31,7 @@ const validate = async (req, res) => {
       type: result.coupon.type,
       value: parseFloat(result.coupon.value),
       discount: result.discount,
-    })
+    }),
   );
 };
 
@@ -55,4 +63,10 @@ const deleteCoupon = async (req, res) => {
   res.status(200).json(new ApiResponse(200, null, "Coupon deleted"));
 };
 
-module.exports = { validate, listCoupons, createCoupon, updateCoupon, deleteCoupon };
+export default {
+  validate,
+  listCoupons,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+};

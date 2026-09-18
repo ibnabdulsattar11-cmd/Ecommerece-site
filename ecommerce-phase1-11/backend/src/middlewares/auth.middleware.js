@@ -1,10 +1,11 @@
-const ApiError = require("../utils/ApiError");
-const { verifyAccessToken } = require("../utils/token");
-const { User } = require("../models");
+import ApiError from "../utils/ApiError.js";
 
+import { verifyAccessToken } from "../utils/token.js";
+
+import { User } from "../models/index.js";
 // Verifies the access token from the Authorization header and attaches
 // the authenticated user to req.user. Does NOT touch the refresh token.
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -63,4 +64,4 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
-module.exports = { protect, optionalAuth };
+export default { protect, optionalAuth };

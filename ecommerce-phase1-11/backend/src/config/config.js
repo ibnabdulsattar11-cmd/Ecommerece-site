@@ -1,4 +1,4 @@
-require("dotenv").config();
+import("dotenv").config();
 
 const base = {
   username: process.env.DB_USER,
@@ -9,7 +9,7 @@ const base = {
   dialect: "postgres",
 };
 
-module.exports = {
+export default {
   development: base,
   test: { ...base, database: `${process.env.DB_NAME}_test` },
   production: {

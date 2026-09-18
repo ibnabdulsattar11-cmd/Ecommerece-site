@@ -1,7 +1,8 @@
-const sharp = require("sharp");
-const fs = require("fs/promises");
-const path = require("path");
+import sharp from "sharp";
 
+import fs from "node:fs/promises";
+
+import path from "node:path";
 // Re-encodes the uploaded file through sharp (strips EXIF/metadata, caps
 // dimensions, converts to webp). Re-encoding also protects against
 // polyglot files that pass MIME checks but aren't valid images.
@@ -35,11 +36,7 @@ const processProductImage = async (filePath) => {
   return outputPath;
 };
 
-module.exports = { processProfileImage, processProductImage };
-
-
-
-
+export default { processProfileImage, processProductImage };
 
 // const multer = require('multer');
 // const sharp = require('sharp');

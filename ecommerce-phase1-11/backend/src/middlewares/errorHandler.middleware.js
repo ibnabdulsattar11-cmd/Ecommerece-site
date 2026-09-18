@@ -1,5 +1,5 @@
-const ApiError = require("../utils/ApiError");
-const logger = require("../utils/logger");
+import ApiError from "../utils/ApiError";
+import logger  from "../utils/logger";
 
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
@@ -48,4 +48,4 @@ const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json(response);
 };
 
-module.exports = errorHandler;
+export default errorHandler;

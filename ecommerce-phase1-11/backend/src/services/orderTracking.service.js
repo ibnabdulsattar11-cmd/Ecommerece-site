@@ -1,4 +1,4 @@
-const {
+import {
   sequelize,
   Order,
   OrderItem,
@@ -8,12 +8,15 @@ const {
   CouponUsage,
   User,
   Notification,
-} = require("../models");
-const ApiError = require("../utils/ApiError");
-const { sendOrderStatusEmail } = require("../services/email.service"); // from Phase 1-2
-const checkoutService = require("../services/checkout.service"); // from Phase 6 — reuses restoreStock
-const refundService = require("./refund.service");
+} from "../models/index.js";
 
+import ApiError from "../utils/ApiError.js";
+
+import { sendOrderStatusEmail } from "../services/email.service.js"; // from Phase 1-2
+
+import checkoutService from "../services/checkout.service.js"; // from Phase 6 — reuses restoreStock
+
+import refundService from "./refund.service.js";
 // Which status can move to which next — used by both the customer cancel
 // action and the admin status-update endpoint so the two can never drift
 // out of sync with each other.
@@ -45,10 +48,21 @@ const NOTIFICATION_TYPE_BY_STATUS = {
   refunded: "return_update",
 };
 
-const recordStatusHistory = async (order, status, note, adminId, transaction) => {
+const recordStatusHistory = async (
+  order,
+  status,
+  note,
+  adminId,
+  transaction,
+) => {
   await OrderStatusHistory.create(
-    { orderId: order.id, status, note: note || null, changedByAdminId: adminId || null },
-    { transaction }
+    {
+      orderId: order.id,
+      status,
+      note: note || null,
+      changedByAdminId: adminId || null,
+    },
+    { transaction },
   );
 };
 
@@ -75,8 +89,15 @@ const notifyCustomer = async (order, status) => {
  */
 const updateOrderStatus = async (
   orderId,
-  { status, note, trackingNumber, courierName, trackingUrl, estimatedDeliveryDate },
-  adminId
+  {
+    status,
+    note,
+    trackingNumber,
+    courierName,
+    trackingUrl,
+    estimatedDeliveryDate,
+  },
+  adminId,
 ) => {
   const order = await Order.findByPk(orderId);
   if (!order) throw new ApiError(404, "Order not found");
@@ -84,7 +105,10 @@ const updateOrderStatus = async (
   if (status && status !== order.status) {
     const allowed = ALLOWED_TRANSITIONS[order.status] || [];
     if (!allowed.includes(status)) {
-      throw new ApiError(400, `Cannot move an order from "${order.status}" to "${status}"`);
+      throw new ApiError(
+        400,
+        `Cannot move an order from "${order.status}" to "${status}"`,
+      );
     }
   }
 
@@ -92,13 +116,15 @@ const updateOrderStatus = async (
     if (trackingNumber !== undefined) order.trackingNumber = trackingNumber;
     if (courierName !== undefined) order.courierName = courierName;
     if (trackingUrl !== undefined) order.trackingUrl = trackingUrl;
-    if (estimatedDeliveryDate !== undefined) order.estimatedDeliveryDate = estimatedDeliveryDate;
+    if (estimatedDeliveryDate !== undefined)
+      order.estimatedDeliveryDate = estimatedDeliveryDate;
 
     const statusChanged = status && status !== order.status;
     if (statusChanged) order.status = status;
 
     await order.save({ transaction: t });
-    if (statusChanged) await recordStatusHistory(order, status, note, adminId, t);
+    if (statusChanged)
+      await recordStatusHistory(order, status, note, adminId, t);
   });
 
   if (status) await notifyCustomer(order, status);
@@ -114,28 +140,45 @@ const cancelOrder = async (order, { reason, adminId } = {}) => {
   if (!CANCELLABLE_STATUSES.includes(order.status)) {
     throw new ApiError(
       400,
-      `Orders that are already "${order.status}" can no longer be cancelled — request a return instead once delivered, or contact support.`
+      `Orders that are already "${order.status}" can no longer be cancelled — request a return instead once delivered, or contact support.`,
     );
   }
 
   let refunded = false;
-  if (order.paymentStatus === "paid" && order.paymentMethod === "stripe" && order.stripePaymentIntentId) {
+  if (
+    order.paymentStatus === "paid" &&
+    order.paymentMethod === "stripe" &&
+    order.stripePaymentIntentId
+  ) {
     await refundService.refundPaymentIntent(order.stripePaymentIntentId);
     refunded = true;
   }
 
   await sequelize.transaction(async (t) => {
-    const items = await OrderItem.findAll({ where: { orderId: order.id }, transaction: t });
+    const items = await OrderItem.findAll({
+      where: { orderId: order.id },
+      transaction: t,
+    });
     await checkoutService.restoreStock(
-      items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
-      t
+      items.map((i) => ({
+        productId: i.productId,
+        variantId: i.variantId,
+        quantity: i.quantity,
+      })),
+      t,
     );
 
     if (order.couponCode) {
-      const coupon = await Coupon.findOne({ where: { code: order.couponCode }, transaction: t });
+      const coupon = await Coupon.findOne({
+        where: { code: order.couponCode },
+        transaction: t,
+      });
       if (coupon) {
         await coupon.decrement("usedCount", { transaction: t });
-        await CouponUsage.destroy({ where: { orderId: order.id }, transaction: t });
+        await CouponUsage.destroy({
+          where: { orderId: order.id },
+          transaction: t,
+        });
       }
     }
 
@@ -147,7 +190,7 @@ const cancelOrder = async (order, { reason, adminId } = {}) => {
       "cancelled",
       reason || (adminId ? "Cancelled by admin" : "Cancelled by customer"),
       adminId,
-      t
+      t,
     );
   });
 
@@ -163,7 +206,10 @@ const cancelOrder = async (order, { reason, adminId } = {}) => {
  */
 const requestReturn = async (order, { itemsReturned, reason }) => {
   if (order.status !== "delivered") {
-    throw new ApiError(400, "Returns can only be requested for delivered orders");
+    throw new ApiError(
+      400,
+      "Returns can only be requested for delivered orders",
+    );
   }
 
   const deliveredEntry = await OrderStatusHistory.findOne({
@@ -171,20 +217,35 @@ const requestReturn = async (order, { itemsReturned, reason }) => {
     order: [["createdAt", "DESC"]],
   });
   const deliveredAt = deliveredEntry?.createdAt || order.updatedAt;
-  const daysSinceDelivery = (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+  const daysSinceDelivery =
+    (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
   if (daysSinceDelivery > RETURN_WINDOW_DAYS) {
-    throw new ApiError(400, `The return window (${RETURN_WINDOW_DAYS} days after delivery) has passed`);
+    throw new ApiError(
+      400,
+      `The return window (${RETURN_WINDOW_DAYS} days after delivery) has passed`,
+    );
   }
 
   const existing = await Return.findOne({ where: { orderId: order.id } });
-  if (existing) throw new ApiError(400, "A return has already been requested for this order");
+  if (existing)
+    throw new ApiError(
+      400,
+      "A return has already been requested for this order",
+    );
 
   const orderItems = await OrderItem.findAll({ where: { orderId: order.id } });
   for (const ret of itemsReturned) {
     const orderItem = orderItems.find((i) => i.id === ret.orderItemId);
-    if (!orderItem) throw new ApiError(400, "One of the selected items does not belong to this order");
+    if (!orderItem)
+      throw new ApiError(
+        400,
+        "One of the selected items does not belong to this order",
+      );
     if (ret.quantity < 1 || ret.quantity > orderItem.quantity) {
-      throw new ApiError(400, `Invalid return quantity for "${orderItem.productNameSnapshot}"`);
+      throw new ApiError(
+        400,
+        `Invalid return quantity for "${orderItem.productNameSnapshot}"`,
+      );
     }
   }
 
@@ -198,7 +259,12 @@ const requestReturn = async (order, { itemsReturned, reason }) => {
 
   order.status = "return_requested";
   await order.save();
-  await recordStatusHistory(order, "return_requested", "Customer requested a return", null);
+  await recordStatusHistory(
+    order,
+    "return_requested",
+    "Customer requested a return",
+    null,
+  );
   await notifyCustomer(order, "return_requested");
 
   return returnRequest;
@@ -210,7 +276,11 @@ const requestReturn = async (order, { itemsReturned, reason }) => {
  * Refund is only actually issued at "completed" — after the item is
  * confirmed physically back — never earlier.
  */
-const reviewReturn = async (returnRequest, { status, adminNote, refundAmount }, adminId) => {
+const reviewReturn = async (
+  returnRequest,
+  { status, adminNote, refundAmount },
+  adminId,
+) => {
   const order = await Order.findByPk(returnRequest.orderId);
   if (!order) throw new ApiError(404, "Order not found");
 
@@ -223,7 +293,12 @@ const reviewReturn = async (returnRequest, { status, adminNote, refundAmount }, 
 
     order.status = "delivered";
     await order.save();
-    await recordStatusHistory(order, "delivered", "Return request rejected", adminId);
+    await recordStatusHistory(
+      order,
+      "delivered",
+      "Return request rejected",
+      adminId,
+    );
     await notifyCustomer(order, "return_requested");
     return returnRequest;
   }
@@ -243,7 +318,9 @@ const reviewReturn = async (returnRequest, { status, adminNote, refundAmount }, 
   }
 
   if (status === "completed") {
-    const orderItems = await OrderItem.findAll({ where: { orderId: order.id } });
+    const orderItems = await OrderItem.findAll({
+      where: { orderId: order.id },
+    });
 
     let amount = refundAmount;
     if (amount === undefined) {
@@ -255,8 +332,15 @@ const reviewReturn = async (returnRequest, { status, adminNote, refundAmount }, 
     amount = parseFloat(amount.toFixed(2));
 
     let refundedViaGateway = false;
-    if (order.paymentMethod === "stripe" && order.paymentStatus === "paid" && order.stripePaymentIntentId) {
-      await refundService.refundPaymentIntent(order.stripePaymentIntentId, amount);
+    if (
+      order.paymentMethod === "stripe" &&
+      order.paymentStatus === "paid" &&
+      order.stripePaymentIntentId
+    ) {
+      await refundService.refundPaymentIntent(
+        order.stripePaymentIntentId,
+        amount,
+      );
       refundedViaGateway = true;
     }
 
@@ -264,7 +348,13 @@ const reviewReturn = async (returnRequest, { status, adminNote, refundAmount }, 
       const restockItems = returnRequest.itemsReturned
         .map((ret) => {
           const item = orderItems.find((i) => i.id === ret.orderItemId);
-          return item ? { productId: item.productId, variantId: item.variantId, quantity: ret.quantity } : null;
+          return item
+            ? {
+                productId: item.productId,
+                variantId: item.variantId,
+                quantity: ret.quantity,
+              }
+            : null;
         })
         .filter(Boolean);
       await checkoutService.restoreStock(restockItems, t);
@@ -272,17 +362,29 @@ const reviewReturn = async (returnRequest, { status, adminNote, refundAmount }, 
       returnRequest.status = "completed";
       // COD orders have no gateway to refund through — the admin settles
       // that cash refund outside the system; we just record it here.
-      returnRequest.refundStatus = refundedViaGateway || order.paymentMethod === "cod" ? "refunded" : "processing";
+      returnRequest.refundStatus =
+        refundedViaGateway || order.paymentMethod === "cod"
+          ? "refunded"
+          : "processing";
       returnRequest.refundAmount = amount;
       await returnRequest.save({ transaction: t });
 
       order.status = "returned";
-      if (returnRequest.refundStatus === "refunded" && amount >= parseFloat(order.total)) {
+      if (
+        returnRequest.refundStatus === "refunded" &&
+        amount >= parseFloat(order.total)
+      ) {
         order.paymentStatus = "refunded";
       }
       await order.save({ transaction: t });
 
-      await recordStatusHistory(order, "returned", `Return completed — refund ${amount}`, adminId, t);
+      await recordStatusHistory(
+        order,
+        "returned",
+        `Return completed — refund ${amount}`,
+        adminId,
+        t,
+      );
     });
 
     await notifyCustomer(order, "returned");
@@ -292,7 +394,7 @@ const reviewReturn = async (returnRequest, { status, adminNote, refundAmount }, 
   throw new ApiError(400, `Unsupported return status: ${status}`);
 };
 
-module.exports = {
+export default {
   ALLOWED_TRANSITIONS,
   updateOrderStatus,
   cancelOrder,

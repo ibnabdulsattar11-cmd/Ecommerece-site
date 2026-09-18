@@ -1,5 +1,5 @@
-const { Op } = require("sequelize");
-const { DeliveryZone } = require("../models");
+import { Op } from "sequelize";
+import { DeliveryZone } from "../models";
 
 const norm = (s) => (s || "").trim().toLowerCase();
 
@@ -31,13 +31,19 @@ const findZone = async (city, area) => {
 
 const checkDelivery = async ({ city, area }) => {
   if (!city) {
-    return { available: false, reason: "City is required to check delivery availability" };
+    return {
+      available: false,
+      reason: "City is required to check delivery availability",
+    };
   }
 
   const zone = await findZone(city, area);
 
   if (!zone) {
-    return { available: false, reason: "We do not currently deliver to this location" };
+    return {
+      available: false,
+      reason: "We do not currently deliver to this location",
+    };
   }
 
   if (!zone.isAvailable) {
@@ -61,7 +67,10 @@ const checkDelivery = async ({ city, area }) => {
 const listAvailableCities = async () => {
   const zones = await DeliveryZone.findAll({
     where: { isAvailable: true },
-    order: [["city", "ASC"], ["area", "ASC"]],
+    order: [
+      ["city", "ASC"],
+      ["area", "ASC"],
+    ],
   });
 
   const byCity = {};
@@ -73,4 +82,4 @@ const listAvailableCities = async () => {
   return Object.values(byCity);
 };
 
-module.exports = { findZone, checkDelivery, listAvailableCities };
+export default { findZone, checkDelivery, listAvailableCities };

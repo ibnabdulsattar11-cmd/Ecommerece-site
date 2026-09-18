@@ -1,11 +1,14 @@
-const ApiError = require("../utils/ApiError");
+import ApiError from "../utils/ApiError";
 
-const NOMINATIM_BASE_URL = process.env.NOMINATIM_BASE_URL || "https://nominatim.openstreetmap.org";
+const NOMINATIM_BASE_URL =
+  process.env.NOMINATIM_BASE_URL || "https://nominatim.openstreetmap.org";
 // Nominatim's usage policy REQUIRES a descriptive User-Agent that identifies
 // your app (and ideally a contact). Set NOMINATIM_USER_AGENT in .env before
 // going to production — using the default below against the free public
 // instance may get you rate-limited or blocked.
-const USER_AGENT = process.env.NOMINATIM_USER_AGENT || "bilingual-ecommerce-app/1.0 (set NOMINATIM_USER_AGENT in .env)";
+const USER_AGENT =
+  process.env.NOMINATIM_USER_AGENT ||
+  "bilingual-ecommerce-app/1.0 (set NOMINATIM_USER_AGENT in .env)";
 
 // Free public Nominatim caps usage at ~1 request/second. We enforce a simple
 // in-process queue so a burst of user activity (typing in the search box,
@@ -87,7 +90,10 @@ const reverseGeocode = async (latitude, longitude, locale = "en") => {
 };
 
 // free-text query -> list of candidate addresses (used by the search box)
-const searchAddress = async (query, { limit = 5, countryCodes, locale = "en" } = {}) => {
+const searchAddress = async (
+  query,
+  { limit = 5, countryCodes, locale = "en" } = {},
+) => {
   const data = await nominatimFetch("/search", {
     format: "jsonv2",
     q: query,
@@ -101,4 +107,4 @@ const searchAddress = async (query, { limit = 5, countryCodes, locale = "en" } =
   return data.map(normalizeAddress);
 };
 
-module.exports = { reverseGeocode, searchAddress };
+export default { reverseGeocode, searchAddress };

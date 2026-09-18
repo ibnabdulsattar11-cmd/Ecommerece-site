@@ -1,4 +1,4 @@
-const { body } = require("express-validator");
+import { body } from "express-validator";
 
 const cancelOrderRules = [body("reason").optional().trim()];
 
@@ -37,4 +37,4 @@ const returnReviewRules = [
   body("refundAmount").optional().isFloat({ min: 0 }),
 ];
 
-module.exports = { cancelOrderRules, returnRequestRules, statusUpdateRules, returnReviewRules };
+export default { cancelOrderRules, returnRequestRules, statusUpdateRules, returnReviewRules };

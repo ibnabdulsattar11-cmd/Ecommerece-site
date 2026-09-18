@@ -1,7 +1,13 @@
-const { Review, Product, User } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const { isVerifiedPurchase, recomputeProductRating } = require("../services/review.service");
+import { Review, Product, User } from "../models/index.js";
+
+import ApiError from "../utils/ApiError.js";
+
+import ApiResponse from "../utils/ApiResponse.js";
+
+import {
+  isVerifiedPurchase,
+  recomputeProductRating,
+} from "../services/review.service.js";
 
 const reviewerInclude = { model: User, attributes: ["id", "name"] };
 
@@ -31,7 +37,12 @@ const listProductReviews = async (req, res) => {
   breakdownRaw.forEach((r) => breakdown[r.rating]++);
 
   const response = new ApiResponse(200, rows);
-  response.pagination = { page, limit, total: count, totalPages: Math.ceil(count / limit) };
+  response.pagination = {
+    page,
+    limit,
+    total: count,
+    totalPages: Math.ceil(count / limit),
+  };
   response.breakdown = breakdown;
   res.status(200).json(response);
 };
@@ -42,10 +53,17 @@ const createReview = async (req, res) => {
   const { rating, comment, images } = req.body;
 
   const product = await Product.findByPk(productId);
-  if (!product || product.status !== "active") throw new ApiError(404, "Product not found");
+  if (!product || product.status !== "active")
+    throw new ApiError(404, "Product not found");
 
-  const existing = await Review.findOne({ where: { productId, userId: req.user.id } });
-  if (existing) throw new ApiError(400, "You have already reviewed this product — edit your existing review instead");
+  const existing = await Review.findOne({
+    where: { productId, userId: req.user.id },
+  });
+  if (existing)
+    throw new ApiError(
+      400,
+      "You have already reviewed this product — edit your existing review instead",
+    );
 
   const verified = await isVerifiedPurchase(req.user.id, productId);
 
@@ -61,15 +79,24 @@ const createReview = async (req, res) => {
 
   res
     .status(201)
-    .json(new ApiResponse(201, review, "Review submitted — it will be visible once approved"));
+    .json(
+      new ApiResponse(
+        201,
+        review,
+        "Review submitted — it will be visible once approved",
+      ),
+    );
 };
 
 // PATCH /api/products/:productId/reviews/:id  { rating?, comment?, images? }
 // Owner only. Editing sends it back through moderation.
 const updateReview = async (req, res) => {
-  const review = await Review.findOne({ where: { id: req.params.id, productId: req.params.productId } });
+  const review = await Review.findOne({
+    where: { id: req.params.id, productId: req.params.productId },
+  });
   if (!review) throw new ApiError(404, "Review not found");
-  if (review.userId !== req.user.id) throw new ApiError(403, "You can only edit your own review");
+  if (review.userId !== req.user.id)
+    throw new ApiError(403, "You can only edit your own review");
 
   const wasApproved = review.status === "approved";
 
@@ -82,17 +109,28 @@ const updateReview = async (req, res) => {
 
   if (wasApproved) await recomputeProductRating(review.productId); // it no longer counts until re-approved
 
-  res.status(200).json(new ApiResponse(200, review, "Review updated — it will be re-reviewed before showing again"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        review,
+        "Review updated — it will be re-reviewed before showing again",
+      ),
+    );
 };
 
 // DELETE /api/products/:productId/reviews/:id  (owner or admin)
 const deleteReview = async (req, res) => {
-  const review = await Review.findOne({ where: { id: req.params.id, productId: req.params.productId } });
+  const review = await Review.findOne({
+    where: { id: req.params.id, productId: req.params.productId },
+  });
   if (!review) throw new ApiError(404, "Review not found");
 
   const isOwner = review.userId === req.user.id;
   const isAdmin = req.user.role === "ADMIN";
-  if (!isOwner && !isAdmin) throw new ApiError(403, "You do not have permission to delete this review");
+  if (!isOwner && !isAdmin)
+    throw new ApiError(403, "You do not have permission to delete this review");
 
   const wasApproved = review.status === "approved";
   await review.destroy();
@@ -107,14 +145,29 @@ const deleteReview = async (req, res) => {
 // someone voting more than once. Fine for a lightweight "was this
 // helpful" signal; add a join table later if abuse becomes a problem.
 const voteHelpful = async (req, res) => {
-  const review = await Review.findOne({ where: { id: req.params.id, productId: req.params.productId } });
+  const review = await Review.findOne({
+    where: { id: req.params.id, productId: req.params.productId },
+  });
   if (!review) throw new ApiError(404, "Review not found");
 
   const field = req.body.helpful ? "helpfulCount" : "notHelpfulCount";
   await review.increment(field);
   await review.reload();
 
-  res.status(200).json(new ApiResponse(200, { helpfulCount: review.helpfulCount, notHelpfulCount: review.notHelpfulCount }));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, {
+        helpfulCount: review.helpfulCount,
+        notHelpfulCount: review.notHelpfulCount,
+      }),
+    );
 };
 
-module.exports = { listProductReviews, createReview, updateReview, deleteReview, voteHelpful };
+export default {
+  listProductReviews,
+  createReview,
+  updateReview,
+  deleteReview,
+  voteHelpful,
+};

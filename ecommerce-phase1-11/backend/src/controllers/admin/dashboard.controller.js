@@ -1,9 +1,16 @@
-const ApiResponse = require("../../utils/ApiResponse");
-const dashboardService = require("../../services/dashboard.service");
+import ApiResponse from "../../utils/ApiResponse.js";
+
+import dashboardService from "../../services/dashboard.service.js";
 
 // GET /api/admin/dashboard  — everything the dashboard landing page needs in one call
 const getDashboard = async (req, res) => {
-  const [summary, revenueTimeseries, topProducts, recentOrders, lowStockProducts] = await Promise.all([
+  const [
+    summary,
+    revenueTimeseries,
+    topProducts,
+    recentOrders,
+    lowStockProducts,
+  ] = await Promise.all([
     dashboardService.getSummary(),
     dashboardService.getRevenueTimeseries(parseInt(req.query.days) || 30),
     dashboardService.getTopProducts(10),
@@ -18,8 +25,8 @@ const getDashboard = async (req, res) => {
       topProducts,
       recentOrders,
       lowStockProducts,
-    })
+    }),
   );
 };
 
-module.exports = { getDashboard };
+export default { getDashboard };

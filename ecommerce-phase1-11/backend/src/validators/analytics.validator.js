@@ -1,8 +1,8 @@
 'use strict';
 
-const { query } = require('express-validator');
+import { query } from 'express-validator';
 
-const dateRangeRules = [
+export const dateRangeRules = [
   query('from')
     .optional()
     .isISO8601()
@@ -13,7 +13,7 @@ const dateRangeRules = [
     .withMessage('"to" must be a valid date (YYYY-MM-DD).'),
 ];
 
-const revenueOverTimeRules = [
+export const revenueOverTimeRules = [
   ...dateRangeRules,
   query('groupBy')
     .optional()
@@ -21,7 +21,7 @@ const revenueOverTimeRules = [
     .withMessage('"groupBy" must be day, week, or month.'),
 ];
 
-const limitRules = [
+export const limitRules = [
   ...dateRangeRules,
   query('limit')
     .optional()
@@ -30,7 +30,7 @@ const limitRules = [
     .toInt(),
 ];
 
-module.exports = {
+export default  {
   dateRangeRules,
   revenueOverTimeRules,
   limitRules,

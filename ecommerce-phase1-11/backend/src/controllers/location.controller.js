@@ -1,9 +1,12 @@
-const { DeliveryZone } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const geocodingService = require("../services/geocoding.service");
-const deliveryZoneService = require("../services/deliveryZone.service");
+import { DeliveryZone } from "../models/index.js";
 
+import ApiError from "../utils/ApiError.js";
+
+import ApiResponse from "../utils/ApiResponse.js";
+
+import geocodingService from "../services/geocoding.service.js";
+
+import deliveryZoneService from "../services/deliveryZone.service.js";
 /* ---------------------------- PUBLIC ---------------------------- */
 
 // GET /api/location/reverse-geocode?lat=&lng=&locale=
@@ -31,7 +34,11 @@ const checkDelivery = async (req, res) => {
   // Lets the frontend send raw coordinates (e.g. straight from "use my
   // location") and have the backend resolve city/area itself.
   if (!city && latitude && longitude) {
-    const resolved = await geocodingService.reverseGeocode(latitude, longitude, locale);
+    const resolved = await geocodingService.reverseGeocode(
+      latitude,
+      longitude,
+      locale,
+    );
     city = resolved.city;
     area = resolved.area;
   }
@@ -51,7 +58,12 @@ const listCities = async (req, res) => {
 // admin panel gives it a proper UI.
 
 const listZones = async (req, res) => {
-  const zones = await DeliveryZone.findAll({ order: [["city", "ASC"], ["area", "ASC"]] });
+  const zones = await DeliveryZone.findAll({
+    order: [
+      ["city", "ASC"],
+      ["area", "ASC"],
+    ],
+  });
   res.status(200).json(new ApiResponse(200, zones));
 };
 
@@ -74,7 +86,7 @@ const deleteZone = async (req, res) => {
   res.status(200).json(new ApiResponse(200, null, "Delivery zone deleted"));
 };
 
-module.exports = {
+export default {
   reverseGeocode,
   searchAddress,
   checkDelivery,

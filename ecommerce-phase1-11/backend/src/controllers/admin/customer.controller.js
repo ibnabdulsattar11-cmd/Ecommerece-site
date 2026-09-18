@@ -1,9 +1,19 @@
-const { Op, fn, col } = require("sequelize");
-const { User, Address, Order } = require("../../models");
-const ApiError = require("../../utils/ApiError");
-const ApiResponse = require("../../utils/ApiResponse");
+import { Op, fn, col } from "sequelize";
 
-const safeAttributes = { exclude: ["password", "refreshTokenHash", "resetPasswordToken", "emailVerifyToken"] };
+import { User, Address, Order } from "../../models/index.js";
+
+import ApiError from "../../utils/ApiError.js";
+
+import ApiResponse from "../../utils/ApiResponse.js";
+
+const safeAttributes = {
+  exclude: [
+    "password",
+    "refreshTokenHash",
+    "resetPasswordToken",
+    "emailVerifyToken",
+  ],
+};
 
 // GET /api/admin/customers?search=&isBlocked=&page=&limit=
 const listCustomers = async (req, res) => {
@@ -13,9 +23,14 @@ const listCustomers = async (req, res) => {
   const where = { role: "USER" };
   if (req.query.search) {
     const term = `%${req.query.search}%`;
-    where[Op.or] = [{ name: { [Op.iLike]: term } }, { email: { [Op.iLike]: term } }, { phone: { [Op.iLike]: term } }];
+    where[Op.or] = [
+      { name: { [Op.iLike]: term } },
+      { email: { [Op.iLike]: term } },
+      { phone: { [Op.iLike]: term } },
+    ];
   }
-  if (req.query.isBlocked !== undefined) where.isBlocked = req.query.isBlocked === "true";
+  if (req.query.isBlocked !== undefined)
+    where.isBlocked = req.query.isBlocked === "true";
 
   const { rows, count } = await User.findAndCountAll({
     where,
@@ -26,7 +41,12 @@ const listCustomers = async (req, res) => {
   });
 
   const response = new ApiResponse(200, rows);
-  response.pagination = { page, limit, total: count, totalPages: Math.ceil(count / limit) };
+  response.pagination = {
+    page,
+    limit,
+    total: count,
+    totalPages: Math.ceil(count / limit),
+  };
   res.status(200).json(response);
 };
 
@@ -64,19 +84,29 @@ const getCustomerById = async (req, res) => {
         lastOrderAt: stats.lastOrderAt,
       },
       recentOrders,
-    })
+    }),
   );
 };
 
 // PATCH /api/admin/customers/:id/block   { blocked: true|false }
 const setBlocked = async (req, res) => {
-  const user = await User.findOne({ where: { id: req.params.id, role: "USER" } });
+  const user = await User.findOne({
+    where: { id: req.params.id, role: "USER" },
+  });
   if (!user) throw new ApiError(404, "Customer not found");
 
   user.isBlocked = !!req.body.blocked;
   await user.save();
 
-  res.status(200).json(new ApiResponse(200, { id: user.id, isBlocked: user.isBlocked }, user.isBlocked ? "Customer blocked" : "Customer unblocked"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { id: user.id, isBlocked: user.isBlocked },
+        user.isBlocked ? "Customer blocked" : "Customer unblocked",
+      ),
+    );
 };
 
 // PATCH /api/admin/customers/:id/role   { role: "USER" | "ADMIN" }
@@ -93,7 +123,11 @@ const setRole = async (req, res) => {
   user.role = req.body.role;
   await user.save();
 
-  res.status(200).json(new ApiResponse(200, { id: user.id, role: user.role }, "Role updated"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, { id: user.id, role: user.role }, "Role updated"),
+    );
 };
 
-module.exports = { listCustomers, getCustomerById, setBlocked, setRole };
+export default { listCustomers, getCustomerById, setBlocked, setRole };

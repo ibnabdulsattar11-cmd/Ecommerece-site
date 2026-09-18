@@ -1,15 +1,20 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const categoryController = require("../controllers/category.controller");
-const {
-  createCategoryRules,
-  updateCategoryRules,
-} = require("../validators/category.validator");
-const validate = require("../middlewares/validate.middleware");
+import categoryController from "../controllers/category.controller.js";
+
+import {
+    createCategoryRules,
+    updateCategoryRules,
+} from "../validators/category.validator.js";
+
+import validate from "../middlewares/validate.middleware.js";
+
 // FIX (Phase 9): see product.routes.js — same bare-import bug, same fix.
-const { protect: authMiddleware } = require("../middlewares/auth.middleware");
-const { restrictTo } = require("../middlewares/admin.middleware");
+import { protect as authMiddleware } from "../middlewares/auth.middleware.js";
+
+import  restrictTo  from "../middlewares/admin.middleware.js";
+
+const router = express.Router();
 const adminMiddleware = restrictTo("ADMIN");
 
 // Public
@@ -40,4 +45,4 @@ router.delete(
   categoryController.deleteCategory,
 );
 
-module.exports = router;
+export default router;

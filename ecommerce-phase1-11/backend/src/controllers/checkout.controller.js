@@ -1,9 +1,9 @@
-const stripe = require("../config/stripe");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const { CartItem } = require("../models");
-const { findOrCreateCart } = require("../services/cart.service"); // from Phase 4
-const checkoutService = require("../services/checkout.service");
+import stripe from "../config/stripe.js";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import { CartItem } from "../models/index.js";
+import { findOrCreateCart } from "../services/cart.service.js";
+import checkoutService from "../services/checkout.service.js";
 
 const loadCartItems = async (req) => {
   const cart = await findOrCreateCart(req);
@@ -44,13 +44,15 @@ const createPaymentIntent = async (req, res) => {
         orderId: order.id,
         orderNumber: order.orderNumber,
         total: order.total,
-      })
+      }),
     );
   } catch (err) {
     // Stripe failed after stock/coupon were already reserved — undo both
     // so nothing is left dangling on a customer who never got a working
     // checkout screen.
-    await checkoutService.cancelOrderAndRestoreStock(order, { reason: "Could not start payment" });
+    await checkoutService.cancelOrderAndRestoreStock(order, {
+      reason: "Could not start payment",
+    });
     throw new ApiError(502, "Could not start the payment — please try again");
   }
 };
@@ -73,7 +75,9 @@ const placeOrder = async (req, res) => {
   order.status = "confirmed";
   await order.save();
 
-  res.status(201).json(new ApiResponse(201, order, "Order placed — pay on delivery"));
+  res
+    .status(201)
+    .json(new ApiResponse(201, order, "Order placed — pay on delivery"));
 };
 
-module.exports = { createPaymentIntent, placeOrder };
+export default { createPaymentIntent, placeOrder };

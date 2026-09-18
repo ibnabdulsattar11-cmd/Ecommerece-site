@@ -1,15 +1,21 @@
-const express = require("express");
+import express from "express";
+
+import adminReturnController from "../../controllers/admin/return.controller.js";
+
+import {
+    returnReviewRules,
+} from "../../validators/orderTracking.validator.js";
+
+import validate from "../../middlewares/validate.middleware.js";
+
+import { protect } from "../../middlewares/auth.middleware.js";
+
+import  restrictTo  from "../../middlewares/admin.middleware.js";
+
 const router = express.Router();
-
-const adminReturnController = require("../../controllers/admin/return.controller");
-const { returnReviewRules } = require("../../validators/orderTracking.validator");
-const validate = require("../../middlewares/validate.middleware");
-const { protect } = require("../../middlewares/auth.middleware");
-const { restrictTo } = require("../../middlewares/admin.middleware");
-
 router.use(protect, restrictTo("ADMIN"));
 
 router.get("/", adminReturnController.listReturns);
 router.patch("/:id", returnReviewRules, validate, adminReturnController.reviewReturn);
 
-module.exports = router;
+export default router;

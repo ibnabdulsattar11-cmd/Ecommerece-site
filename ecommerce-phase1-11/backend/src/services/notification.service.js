@@ -1,4 +1,4 @@
-const { Notification } = require("../models");
+import { Notification } from"../models";
 
 // Fire-and-forget by design (callers wrap with .catch(() => {}) if they
 // don't want a notification failure to break the main action) — kept as
@@ -9,4 +9,4 @@ const createNotification = async (userId, type, title, message, metadata = {}) =
   return Notification.create({ userId, type, title, message, metadata });
 };
 
-module.exports = { createNotification };
+export default { createNotification };

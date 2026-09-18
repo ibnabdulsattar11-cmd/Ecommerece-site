@@ -1,19 +1,28 @@
-'use strict';
+"use strict";
 
-const { Op, fn, col, literal } = require('sequelize');
-const { sequelize, Order, OrderItem, Product, Category, User, Return } = require('../models');
-const { previousPeriod, pctChange } = require('../utils/dateRange.util');
+import { Op, fn, col, literal } from "sequelize";
 
+import {
+  sequelize,
+  Order,
+  OrderItem,
+  Product,
+  Category,
+  User,
+  Return,
+} from "../models/index.js";
+
+import { previousPeriod, pctChange } from "../utils/dateRange.util.js";
 // Orders in these statuses represent real, counted revenue.
 // Cancelled orders and unpaid orders are excluded from every money figure.
-const PAID_FILTER = { paymentStatus: 'paid' };
+const PAID_FILTER = { paymentStatus: "paid" };
 
 /**
  * Postgres date_trunc bucket for a given grouping.
  * 'day' | 'week' | 'month'
  */
 function truncatedDate(groupBy) {
-  return fn('date_trunc', groupBy, col('Order.createdAt'));
+  return fn("date_trunc", groupBy, col("Order.createdAt"));
 }
 
 async function getOverview({ from, to }) {
@@ -31,17 +40,17 @@ async function getOverview({ from, to }) {
   const [current, previousStats] = await Promise.all([
     Order.findOne({
       attributes: [
-        [fn('COALESCE', fn('SUM', col('total')), 0), 'totalRevenue'],
-        [fn('COUNT', col('id')), 'totalOrders'],
-        [fn('COALESCE', fn('AVG', col('total')), 0), 'avgOrderValue'],
+        [fn("COALESCE", fn("SUM", col("total")), 0), "totalRevenue"],
+        [fn("COUNT", col("id")), "totalOrders"],
+        [fn("COALESCE", fn("AVG", col("total")), 0), "avgOrderValue"],
       ],
       where: currentWhere,
       raw: true,
     }),
     Order.findOne({
       attributes: [
-        [fn('COALESCE', fn('SUM', col('total')), 0), 'totalRevenue'],
-        [fn('COUNT', col('id')), 'totalOrders'],
+        [fn("COALESCE", fn("SUM", col("total")), 0), "totalRevenue"],
+        [fn("COUNT", col("id")), "totalOrders"],
       ],
       where: previousWhere,
       raw: true,
@@ -51,7 +60,7 @@ async function getOverview({ from, to }) {
   // Distinct paying customers in range (guest checkouts, if userId is null, are excluded here).
   const totalCustomers = await Order.count({
     distinct: true,
-    col: 'userId',
+    col: "userId",
     where: { ...currentWhere, userId: { [Op.ne]: null } },
   });
 
@@ -76,19 +85,19 @@ async function getOverview({ from, to }) {
   };
 }
 
-async function getRevenueOverTime({ from, to, groupBy = 'day' }) {
+async function getRevenueOverTime({ from, to, groupBy = "day" }) {
   const rows = await Order.findAll({
     attributes: [
-      [truncatedDate(groupBy), 'bucket'],
-      [fn('COALESCE', fn('SUM', col('total')), 0), 'revenue'],
-      [fn('COUNT', col('id')), 'orders'],
+      [truncatedDate(groupBy), "bucket"],
+      [fn("COALESCE", fn("SUM", col("total")), 0), "revenue"],
+      [fn("COUNT", col("id")), "orders"],
     ],
     where: {
       ...PAID_FILTER,
       createdAt: { [Op.between]: [from, to] },
     },
-    group: ['bucket'],
-    order: [[literal('bucket'), 'ASC']],
+    group: ["bucket"],
+    order: [[literal("bucket"), "ASC"]],
     raw: true,
   });
 
@@ -102,14 +111,20 @@ async function getRevenueOverTime({ from, to, groupBy = 'day' }) {
 async function getBestSellingProducts({ from, to, limit = 10 }) {
   const rows = await OrderItem.findAll({
     attributes: [
-      'productId',
-      [fn('SUM', col('OrderItem.quantity')), 'unitsSold'],
-      [fn('SUM', literal('"OrderItem"."quantity" * "OrderItem"."paidUnitPrice"')), 'revenue'],
+      "productId",
+      [fn("SUM", col("OrderItem.quantity")), "unitsSold"],
+      [
+        fn(
+          "SUM",
+          literal('"OrderItem"."quantity" * "OrderItem"."paidUnitPrice"'),
+        ),
+        "revenue",
+      ],
     ],
     include: [
       {
         model: Product,
-        attributes: ['nameEn', 'nameAr', 'sku', 'stock'],
+        attributes: ["nameEn", "nameAr", "sku", "stock"],
         required: true,
       },
       {
@@ -122,8 +137,8 @@ async function getBestSellingProducts({ from, to, limit = 10 }) {
         },
       },
     ],
-    group: ['OrderItem.productId', 'Product.id'],
-    order: [[literal('"unitsSold"'), 'DESC']],
+    group: ["OrderItem.productId", "Product.id"],
+    order: [[literal('"unitsSold"'), "DESC"]],
     limit,
     subQuery: false,
   });
@@ -134,19 +149,25 @@ async function getBestSellingProducts({ from, to, limit = 10 }) {
     nameAr: r.Product.nameAr,
     sku: r.Product.sku,
     currentStock: r.Product.stock,
-    unitsSold: Number(r.get('unitsSold')),
-    revenue: Number(r.get('revenue')),
+    unitsSold: Number(r.get("unitsSold")),
+    revenue: Number(r.get("revenue")),
   }));
 }
 
 async function getSalesByCategory({ from, to }) {
   const rows = await OrderItem.findAll({
     attributes: [
-      [col('Product.Category.id'), 'categoryId'],
-      [col('Product.Category.nameEn'), 'categoryNameEn'],
-      [col('Product.Category.nameAr'), 'categoryNameAr'],
-      [fn('SUM', col('OrderItem.quantity')), 'unitsSold'],
-      [fn('SUM', literal('"OrderItem"."quantity" * "OrderItem"."paidUnitPrice"')), 'revenue'],
+      [col("Product.Category.id"), "categoryId"],
+      [col("Product.Category.nameEn"), "categoryNameEn"],
+      [col("Product.Category.nameAr"), "categoryNameAr"],
+      [fn("SUM", col("OrderItem.quantity")), "unitsSold"],
+      [
+        fn(
+          "SUM",
+          literal('"OrderItem"."quantity" * "OrderItem"."paidUnitPrice"'),
+        ),
+        "revenue",
+      ],
     ],
     include: [
       {
@@ -165,35 +186,35 @@ async function getSalesByCategory({ from, to }) {
         },
       },
     ],
-    group: ['Product.Category.id'],
-    order: [[literal('"revenue"'), 'DESC']],
+    group: ["Product.Category.id"],
+    order: [[literal('"revenue"'), "DESC"]],
     subQuery: false,
   });
 
   return rows.map((r) => ({
-    categoryId: r.get('categoryId'),
-    categoryNameEn: r.get('categoryNameEn'),
-    categoryNameAr: r.get('categoryNameAr'),
-    unitsSold: Number(r.get('unitsSold')),
-    revenue: Number(r.get('revenue')),
+    categoryId: r.get("categoryId"),
+    categoryNameEn: r.get("categoryNameEn"),
+    categoryNameAr: r.get("categoryNameAr"),
+    unitsSold: Number(r.get("unitsSold")),
+    revenue: Number(r.get("revenue")),
   }));
 }
 
 async function getTopCustomers({ from, to, limit = 10 }) {
   const rows = await Order.findAll({
     attributes: [
-      'userId',
-      [fn('COUNT', col('Order.id')), 'ordersCount'],
-      [fn('SUM', col('total')), 'totalSpent'],
+      "userId",
+      [fn("COUNT", col("Order.id")), "ordersCount"],
+      [fn("SUM", col("total")), "totalSpent"],
     ],
-    include: [{ model: User, attributes: ['name', 'email'], required: true }],
+    include: [{ model: User, attributes: ["name", "email"], required: true }],
     where: {
       ...PAID_FILTER,
       createdAt: { [Op.between]: [from, to] },
       userId: { [Op.ne]: null },
     },
-    group: ['Order.userId', 'User.id'],
-    order: [[literal('"totalSpent"'), 'DESC']],
+    group: ["Order.userId", "User.id"],
+    order: [[literal('"totalSpent"'), "DESC"]],
     limit,
     subQuery: false,
   });
@@ -202,8 +223,8 @@ async function getTopCustomers({ from, to, limit = 10 }) {
     userId: r.userId,
     name: r.User.name,
     email: r.User.email,
-    ordersCount: Number(r.get('ordersCount')),
-    totalSpent: Number(r.get('totalSpent')),
+    ordersCount: Number(r.get("ordersCount")),
+    totalSpent: Number(r.get("totalSpent")),
   }));
 }
 
@@ -211,20 +232,26 @@ async function getNewVsReturningCustomers({ from, to }) {
   // "New" = a customer whose first-ever paid order falls inside the range.
   // "Returning" = a customer who ordered in-range but had a paid order before `from`.
   const firstOrderPerUser = await Order.findAll({
-    attributes: ['userId', [fn('MIN', col('createdAt')), 'firstOrderAt']],
+    attributes: ["userId", [fn("MIN", col("createdAt")), "firstOrderAt"]],
     where: { ...PAID_FILTER, userId: { [Op.ne]: null } },
-    group: ['userId'],
+    group: ["userId"],
     raw: true,
   });
 
   const customersInRange = await Order.findAll({
-    attributes: ['userId'],
-    where: { ...PAID_FILTER, createdAt: { [Op.between]: [from, to] }, userId: { [Op.ne]: null } },
-    group: ['userId'],
+    attributes: ["userId"],
+    where: {
+      ...PAID_FILTER,
+      createdAt: { [Op.between]: [from, to] },
+      userId: { [Op.ne]: null },
+    },
+    group: ["userId"],
     raw: true,
   });
 
-  const firstOrderMap = new Map(firstOrderPerUser.map((r) => [r.userId, new Date(r.firstOrderAt)]));
+  const firstOrderMap = new Map(
+    firstOrderPerUser.map((r) => [r.userId, new Date(r.firstOrderAt)]),
+  );
 
   let newCustomers = 0;
   let returningCustomers = 0;
@@ -238,21 +265,25 @@ async function getNewVsReturningCustomers({ from, to }) {
     }
   }
 
-  return { newCustomers, returningCustomers, totalCustomers: newCustomers + returningCustomers };
+  return {
+    newCustomers,
+    returningCustomers,
+    totalCustomers: newCustomers + returningCustomers,
+  };
 }
 
 async function getOrderStatusBreakdown({ from, to }) {
   const rows = await Order.findAll({
-    attributes: ['status', [fn('COUNT', col('id')), 'count']],
+    attributes: ["status", [fn("COUNT", col("id")), "count"]],
     where: { createdAt: { [Op.between]: [from, to] } },
-    group: ['status'],
+    group: ["status"],
     raw: true,
   });
 
   return rows.map((r) => ({ status: r.status, count: Number(r.count) }));
 }
 
-module.exports = {
+export default {
   getOverview,
   getRevenueOverTime,
   getBestSellingProducts,

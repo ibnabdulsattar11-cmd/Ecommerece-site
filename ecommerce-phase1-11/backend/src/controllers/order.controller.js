@@ -1,7 +1,14 @@
-const { Order, OrderItem, Address, OrderStatusHistory, Return } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
+import {
+    Order,
+    OrderItem,
+    Address,
+    OrderStatusHistory,
+    Return,
+} from "../models/index.js";
 
+import ApiError from "../utils/ApiError.js";
+
+import ApiResponse from "../utils/ApiResponse.js";
 // Extends Phase 6's fullInclude with the tracking timeline and any return
 // request, so the order detail page has everything in one call.
 const fullInclude = [
@@ -52,4 +59,4 @@ const getOrderByNumber = async (req, res) => {
   res.status(200).json(new ApiResponse(200, order));
 };
 
-module.exports = { getMyOrders, getOrderById, getOrderByNumber };
+export default { getMyOrders, getOrderById, getOrderByNumber };

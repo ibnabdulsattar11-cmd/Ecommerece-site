@@ -1,6 +1,8 @@
-const { Notification } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
+import { Notification } from "../models/index.js";
+
+import ApiError from "../utils/ApiError.js";
+
+import ApiResponse from "../utils/ApiResponse.js";
 
 // GET /api/notifications?page=&limit=&unreadOnly=true
 const listMyNotifications = async (req, res) => {
@@ -48,4 +50,4 @@ const deleteNotification = async (req, res) => {
   res.status(200).json(new ApiResponse(200, null, "Notification deleted"));
 };
 
-module.exports = { listMyNotifications, markRead, markAllRead, deleteNotification };
+export default { listMyNotifications, markRead, markAllRead, deleteNotification };

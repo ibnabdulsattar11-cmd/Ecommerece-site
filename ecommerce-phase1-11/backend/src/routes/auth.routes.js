@@ -1,6 +1,8 @@
-const express = require("express");
-const passport = require("../config/passport");
-const {
+import express from "express";
+
+import passport from "../config/passport.js";
+
+import {
   register,
   login,
   logout,
@@ -10,18 +12,23 @@ const {
   resetPassword,
   changePassword,
   googleCallback,
-} = require("../controllers/auth.controller");
-const {
+} from "../controllers/auth.controller.js";
+
+import {
   registerValidator,
   loginValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
   changePasswordValidator,
-} = require("../validators/auth.validator");
-const validate = require("../middlewares/validate.middleware");
-const { protect } = require("../middlewares/auth.middleware");
-const { authLimiter } = require("../middlewares/rateLimit.middleware");
-const csrfOriginCheck = require("../middlewares/csrfOriginCheck.middleware"); // Phase 11
+} from "../validators/auth.validator.js";
+
+import validate from "../middlewares/validate.middleware.js";
+
+import { protect } from "../middlewares/auth.middleware.js";
+
+import { authLimiter } from "../middlewares/rateLimit.middleware.js";
+
+import csrfOriginCheck from "../middlewares/csrfOriginCheck.middleware.js";
 
 const router = express.Router();
 
@@ -75,4 +82,4 @@ router.get(
   googleCallback,
 );
 
-module.exports = router;
+export default router;

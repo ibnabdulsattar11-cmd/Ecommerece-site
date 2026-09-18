@@ -1,4 +1,4 @@
-const ApiError = require("../utils/ApiError");
+import ApiError from "../utils/ApiError";
 
 // Usage: router.get('/admin-only', protect, restrictTo('ADMIN'), handler)
 // IMPORTANT: this must always run AFTER `protect` on the backend.
@@ -16,4 +16,4 @@ const restrictTo =
     next();
   };
 
-module.exports = { restrictTo };
+export default { restrictTo };

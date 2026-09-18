@@ -1,23 +1,35 @@
-const { Product, Category, ProductImage, ProductVariant, Review, sequelize } = require('../models');
-const { Op } = require('sequelize');
-const slugify = require('../utils/slugify');
+import {
+  Product,
+  Category,
+  ProductImage,
+  ProductVariant,
+  Review,
+  sequelize,
+} from "../models/index.js";
 
+import { Op } from "sequelize";
+
+import slugify from "../utils/slugify.js";
 const includeFull = [
-  { model: ProductImage, as: 'images', order: [['order', 'ASC']] },
-  { model: ProductVariant, as: 'variants' },
-  { model: Category, as: 'category', attributes: ['id', 'nameEn', 'nameAr', 'slug'] },
+  { model: ProductImage, as: "images", order: [["order", "ASC"]] },
+  { model: ProductVariant, as: "variants" },
+  {
+    model: Category,
+    as: "category",
+    attributes: ["id", "nameEn", "nameAr", "slug"],
+  },
 ];
 
 // GET /api/products (public)
 // Supports: ?page=1&limit=20&search=&category=slug&minPrice=&maxPrice=
 //           &brand=&sort=price_asc|price_desc|newest|rating|popular&inStock=true
-exports.getProducts = async (req, res, next) => {
+export const getProducts = async (req, res, next) => {
   try {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const offset = (page - 1) * limit;
 
-    const where = { status: 'active' };
+    const where = { status: "active" };
     const include = [...includeFull];
 
     // --- Search (bilingual, matches name/desc/sku/brand) ---
@@ -33,53 +45,63 @@ exports.getProducts = async (req, res, next) => {
 
     // --- Category filter (by slug, includes subcategory products) ---
     if (req.query.category) {
-      const category = await Category.findOne({ where: { slug: req.query.category } });
+      const category = await Category.findOne({
+        where: { slug: req.query.category },
+      });
       if (category) {
-        const children = await Category.findAll({ where: { parentId: category.id } });
+        const children = await Category.findAll({
+          where: { parentId: category.id },
+        });
         const categoryIds = [category.id, ...children.map((c) => c.id)];
         where.categoryId = { [Op.in]: categoryIds };
       } else {
         // unknown category slug -> empty result set, not an error
-        return res.json({ success: true, data: [], pagination: { page, limit, total: 0, totalPages: 0 } });
+        return res.json({
+          success: true,
+          data: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        });
       }
     }
 
     // --- Price range ---
     if (req.query.minPrice || req.query.maxPrice) {
       where.price = {};
-      if (req.query.minPrice) where.price[Op.gte] = parseFloat(req.query.minPrice);
-      if (req.query.maxPrice) where.price[Op.lte] = parseFloat(req.query.maxPrice);
+      if (req.query.minPrice)
+        where.price[Op.gte] = parseFloat(req.query.minPrice);
+      if (req.query.maxPrice)
+        where.price[Op.lte] = parseFloat(req.query.maxPrice);
     }
 
     // --- Brand filter (comma separated) ---
     if (req.query.brand) {
-      const brands = req.query.brand.split(',').map((b) => b.trim());
+      const brands = req.query.brand.split(",").map((b) => b.trim());
       where.brand = { [Op.in]: brands };
     }
 
     // --- Stock filter ---
-    if (req.query.inStock === 'true') {
+    if (req.query.inStock === "true") {
       where.stock = { [Op.gt]: 0 };
     }
 
     // --- Sorting ---
-    let order = [['createdAt', 'DESC']]; // newest first, default
+    let order = [["createdAt", "DESC"]]; // newest first, default
     switch (req.query.sort) {
-      case 'price_asc':
-        order = [['price', 'ASC']];
+      case "price_asc":
+        order = [["price", "ASC"]];
         break;
-      case 'price_desc':
-        order = [['price', 'DESC']];
+      case "price_desc":
+        order = [["price", "DESC"]];
         break;
-      case 'rating':
-        order = [['avgRating', 'DESC']];
+      case "rating":
+        order = [["avgRating", "DESC"]];
         break;
-      case 'popular':
-        order = [['viewCount', 'DESC']];
+      case "popular":
+        order = [["viewCount", "DESC"]];
         break;
-      case 'newest':
+      case "newest":
       default:
-        order = [['createdAt', 'DESC']];
+        order = [["createdAt", "DESC"]];
     }
 
     const { rows, count } = await Product.findAndCountAll({
@@ -107,41 +129,46 @@ exports.getProducts = async (req, res, next) => {
 };
 
 // GET /api/products/:slug (public) - detail + related products
-exports.getProductBySlug = async (req, res, next) => {
+export const getProductBySlug = async (req, res, next) => {
   try {
     const product = await Product.findOne({
-      where: { slug: req.params.slug, status: 'active' },
+      where: { slug: req.params.slug, status: "active" },
       include: includeFull,
     });
 
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     // fire-and-forget view count increment (don't block response)
-    product.increment('viewCount').catch(() => {});
+    product.increment("viewCount").catch(() => {});
 
     // Related products: same category, excluding current product
     const related = await Product.findAll({
       where: {
         categoryId: product.categoryId,
-        status: 'active',
+        status: "active",
         id: { [Op.ne]: product.id },
       },
-      include: [{ model: ProductImage, as: 'images', limit: 1 }],
+      include: [{ model: ProductImage, as: "images", limit: 1 }],
       limit: 8,
-      order: [['avgRating', 'DESC']],
+      order: [["avgRating", "DESC"]],
     });
 
     // Recommended: top rated across catalog (simple version;
     // swap for a real recommendation engine later if needed)
     const recommended = await Product.findAll({
       where: {
-        status: 'active',
+        status: "active",
         id: { [Op.notIn]: [product.id, ...related.map((r) => r.id)] },
       },
-      include: [{ model: ProductImage, as: 'images', limit: 1 }],
-      order: [['avgRating', 'DESC'], ['reviewCount', 'DESC']],
+      include: [{ model: ProductImage, as: "images", limit: 1 }],
+      order: [
+        ["avgRating", "DESC"],
+        ["reviewCount", "DESC"],
+      ],
       limit: 8,
     });
 
@@ -159,16 +186,16 @@ exports.getProductBySlug = async (req, res, next) => {
 // GET /api/products/:id/recently-viewed?ids=id1,id2,id3
 // Frontend keeps recently-viewed product IDs in localStorage and
 // asks the backend to hydrate them with fresh data in one call.
-exports.getRecentlyViewed = async (req, res, next) => {
+export const getRecentlyViewed = async (req, res, next) => {
   try {
-    const ids = (req.query.ids || '').split(',').filter(Boolean);
+    const ids = (req.query.ids || "").split(",").filter(Boolean);
     if (!ids.length) {
       return res.json({ success: true, data: [] });
     }
 
     const products = await Product.findAll({
-      where: { id: { [Op.in]: ids }, status: 'active' },
-      include: [{ model: ProductImage, as: 'images', limit: 1 }],
+      where: { id: { [Op.in]: ids }, status: "active" },
+      include: [{ model: ProductImage, as: "images", limit: 1 }],
     });
 
     // preserve the order the frontend sent (most-recent-first)
@@ -183,20 +210,20 @@ exports.getRecentlyViewed = async (req, res, next) => {
 };
 
 // GET /api/products/filters/meta - distinct brands + price range for filter UI
-exports.getFilterMeta = async (req, res, next) => {
+export const getFilterMeta = async (req, res, next) => {
   try {
     const brands = await Product.findAll({
-      attributes: [[sequelize.fn('DISTINCT', sequelize.col('brand')), 'brand']],
-      where: { status: 'active', brand: { [Op.ne]: null } },
+      attributes: [[sequelize.fn("DISTINCT", sequelize.col("brand")), "brand"]],
+      where: { status: "active", brand: { [Op.ne]: null } },
       raw: true,
     });
 
     const priceRange = await Product.findOne({
       attributes: [
-        [sequelize.fn('MIN', sequelize.col('price')), 'minPrice'],
-        [sequelize.fn('MAX', sequelize.col('price')), 'maxPrice'],
+        [sequelize.fn("MIN", sequelize.col("price")), "minPrice"],
+        [sequelize.fn("MAX", sequelize.col("price")), "maxPrice"],
       ],
-      where: { status: 'active' },
+      where: { status: "active" },
       raw: true,
     });
 
@@ -215,12 +242,21 @@ exports.getFilterMeta = async (req, res, next) => {
 // ---------- ADMIN ----------
 
 // POST /api/products (admin)
-exports.createProduct = async (req, res, next) => {
+export const createProduct = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     const {
-      nameEn, nameAr, descEn, descAr, sku, brand,
-      price, salePrice, stock, categoryId, status,
+      nameEn,
+      nameAr,
+      descEn,
+      descAr,
+      sku,
+      brand,
+      price,
+      salePrice,
+      stock,
+      categoryId,
+      status,
       variants, // [{ size, color, colorHex, sku, stock, priceModifier, isDefault }]
     } = req.body;
 
@@ -233,17 +269,26 @@ exports.createProduct = async (req, res, next) => {
 
     const product = await Product.create(
       {
-        nameEn, nameAr, descEn, descAr, sku, brand,
-        price, salePrice, stock: stock || 0, categoryId,
-        status: status || 'draft', slug,
+        nameEn,
+        nameAr,
+        descEn,
+        descAr,
+        sku,
+        brand,
+        price,
+        salePrice,
+        stock: stock || 0,
+        categoryId,
+        status: status || "draft",
+        slug,
       },
-      { transaction: t }
+      { transaction: t },
     );
 
     if (Array.isArray(variants) && variants.length) {
       await ProductVariant.bulkCreate(
         variants.map((v) => ({ ...v, productId: product.id })),
-        { transaction: t }
+        { transaction: t },
       );
     }
 
@@ -260,7 +305,7 @@ exports.createProduct = async (req, res, next) => {
           order: i,
           isPrimary: i === 0,
         })),
-        { transaction: t }
+        { transaction: t },
       );
     }
 
@@ -275,16 +320,27 @@ exports.createProduct = async (req, res, next) => {
 };
 
 // PUT /api/products/:id (admin)
-exports.updateProduct = async (req, res, next) => {
+export const updateProduct = async (req, res, next) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     const allowedFields = [
-      'nameEn', 'nameAr', 'descEn', 'descAr', 'sku', 'brand',
-      'price', 'salePrice', 'stock', 'categoryId', 'status',
+      "nameEn",
+      "nameAr",
+      "descEn",
+      "descAr",
+      "sku",
+      "brand",
+      "price",
+      "salePrice",
+      "stock",
+      "categoryId",
+      "status",
     ];
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) product[field] = req.body[field];
@@ -294,7 +350,9 @@ exports.updateProduct = async (req, res, next) => {
       const baseSlug = slugify(req.body.nameEn);
       let slug = baseSlug;
       let counter = 1;
-      while (await Product.findOne({ where: { slug, id: { [Op.ne]: product.id } } })) {
+      while (
+        await Product.findOne({ where: { slug, id: { [Op.ne]: product.id } } })
+      ) {
         slug = `${baseSlug}-${counter++}`;
       }
       product.slug = slug;
@@ -309,26 +367,32 @@ exports.updateProduct = async (req, res, next) => {
 };
 
 // DELETE /api/products/:id (admin) - soft delete via status
-exports.deleteProduct = async (req, res, next) => {
+export const deleteProduct = async (req, res, next) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
-    product.status = 'INACTIVE';
+    product.status = "INACTIVE";
     await product.save();
-    res.json({ success: true, message: 'Product deactivated' });
+    res.json({ success: true, message: "Product deactivated" });
   } catch (err) {
     next(err);
   }
 };
 
 // GET /api/products/admin/:id (admin) - full detail incl. DRAFT/INACTIVE
-exports.getProductByIdAdmin = async (req, res, next) => {
+export const getProductByIdAdmin = async (req, res, next) => {
   try {
-    const product = await Product.findByPk(req.params.id, { include: includeFull });
+    const product = await Product.findByPk(req.params.id, {
+      include: includeFull,
+    });
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
     res.json({ success: true, data: product });
   } catch (err) {

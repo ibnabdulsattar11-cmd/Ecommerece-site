@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const { handleStripeWebhook } = require("../controllers/webhook.controller");
+import { handleStripeWebhook } from "../controllers/webhook.controller";
 
 // express.raw() here is critical — Stripe's signature verification needs
 // the EXACT raw request bytes. If express.json() has already parsed the
@@ -9,4 +9,4 @@ const { handleStripeWebhook } = require("../controllers/webhook.controller");
 // app.js BEFORE the global express.json() middleware — see README.
 router.post("/stripe", express.raw({ type: "application/json" }), handleStripeWebhook);
 
-module.exports = router;
+export default router;

@@ -1,11 +1,12 @@
-require("dotenv").config();
-const validateEnv = require("./src/config/validateEnv"); // Phase 11
+import "./src/models/index.js";
+import validateEnv from "./src/config/validateEnv.js";
+
 validateEnv();
 
-const app = require("./src/app");
-const { sequelize, connectDB } = require("./src/config/db");
-require("./src/models"); // load models & associations
-const logger = require("./src/utils/logger");
+import app from "./src/app";
+import { sequelize, connectDB } from "./src/config/db";
+import "./src/models/index.js";
+import logger from "./src/utils/logger";
 
 const PORT = process.env.PORT || 5000;
 
@@ -23,10 +24,6 @@ const startServer = async () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 
-  // Phase 11: graceful shutdown — stop accepting new connections, let
-  // in-flight requests finish, then close the DB pool cleanly. Without
-  // this, a container orchestrator's SIGTERM during a deploy can kill
-  // requests mid-flight and leave DB connections dangling.
   const shutdown = (signal) => {
     console.log(`\n${signal} received: closing server gracefully...`);
     server.close(async () => {
@@ -40,7 +37,6 @@ const startServer = async () => {
       }
     });
 
-    // Force-exit if graceful shutdown hangs (e.g. a stuck connection)
     setTimeout(() => {
       console.error("⏱  Forced shutdown after timeout");
       process.exit(1);
@@ -60,7 +56,7 @@ const startServer = async () => {
       message: err.message,
       stack: err.stack,
     });
-    process.exit(1); // process is in an undefined state after this — restart it
+    process.exit(1); 
   });
 };
 

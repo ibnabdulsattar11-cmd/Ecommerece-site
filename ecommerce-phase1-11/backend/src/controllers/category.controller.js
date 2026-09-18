@@ -1,9 +1,9 @@
-const { Category } = require('../models');
-const slugify = require('../utils/slugify');
-const { Op } = require('sequelize');
+import { Category } from '../models';
+import slugify from'../utils/slugify';
+import { Op } from 'sequelize';
 
 // GET /api/categories  (public) - tree or flat list
-exports.getCategories = async (req, res, next) => {
+export const getCategories = async (req, res, next) => {
   try {
     const { tree } = req.query;
 
@@ -33,7 +33,7 @@ exports.getCategories = async (req, res, next) => {
 };
 
 // GET /api/categories/:slug (public)
-exports.getCategoryBySlug = async (req, res, next) => {
+export const getCategoryBySlug = async (req, res, next) => {
   try {
     const category = await Category.findOne({
       where: { slug: req.params.slug, isActive: true },
@@ -48,7 +48,7 @@ exports.getCategoryBySlug = async (req, res, next) => {
 };
 
 // POST /api/categories (admin)
-exports.createCategory = async (req, res, next) => {
+export const createCategory = async (req, res, next) => {
   try {
     const { nameEn, nameAr, descriptionEn, descriptionAr, parentId, image, sortOrder } = req.body;
 
@@ -76,7 +76,7 @@ exports.createCategory = async (req, res, next) => {
 };
 
 // PUT /api/categories/:id (admin)
-exports.updateCategory = async (req, res, next) => {
+export const updateCategory = async (req, res, next) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category) {
@@ -109,7 +109,7 @@ exports.updateCategory = async (req, res, next) => {
 };
 
 // DELETE /api/categories/:id (admin) - soft delete via isActive
-exports.deleteCategory = async (req, res, next) => {
+export const deleteCategory = async (req, res, next) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category) {

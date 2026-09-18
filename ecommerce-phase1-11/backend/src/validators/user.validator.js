@@ -1,4 +1,4 @@
-const { body } = require("express-validator");
+import { body } from "express-validator";
 
 const updateProfileValidator = [
   body("name").optional().trim().isLength({ min: 1, max: 100 }),
@@ -18,4 +18,4 @@ const addressValidator = [
   body("isDefault").optional().isBoolean(),
 ];
 
-module.exports = { updateProfileValidator, addressValidator };
+export default { updateProfileValidator, addressValidator };

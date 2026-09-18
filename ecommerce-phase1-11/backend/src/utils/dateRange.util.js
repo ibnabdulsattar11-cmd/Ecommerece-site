@@ -63,7 +63,7 @@ function pctChange(current, previous) {
   return Number((((current - previous) / previous) * 100).toFixed(2));
 }
 
-module.exports = {
+export default {
   VALID_GROUPINGS,
   resolveDateRange,
   previousPeriod,

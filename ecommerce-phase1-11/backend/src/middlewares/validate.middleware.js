@@ -1,5 +1,6 @@
-const { validationResult } = require("express-validator");
-const ApiError = require("../utils/ApiError");
+import { validationResult } from "express-validator";
+
+import ApiError from "../utils/ApiError.js";
 
 // Run after a chain of express-validator checks; collects and formats errors.
 const validate = (req, res, next) => {
@@ -11,4 +12,4 @@ const validate = (req, res, next) => {
   next();
 };
 
-module.exports = validate;
+export default validate;

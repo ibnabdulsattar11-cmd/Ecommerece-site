@@ -1,24 +1,29 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const productController = require("../controllers/product.controller");
-const {
-  createProductRules,
-  updateProductRules,
-  listProductsRules,
-} = require("../validators/product.validator");
-const validate = require("../middlewares/validate.middleware");
+import productController from "../controllers/product.controller.js";
+
+import {
+    createProductRules,
+    updateProductRules,
+    listProductsRules,
+} from "../validators/product.validator.js";
+
+import validate from "../middlewares/validate.middleware.js";
+
 // FIX (Phase 9): these were being imported as bare default functions, but
 // both middleware files export named objects ({ protect, optionalAuth }
 // and { restrictTo }) — using an object where Express expects a function
 // crashes as soon as any of the routes below are hit.
-const { protect: authMiddleware } = require("../middlewares/auth.middleware");
-const { restrictTo } = require("../middlewares/admin.middleware");
+import { protect as authMiddleware } from "../middlewares/auth.middleware.js";
+
+import restrictTo  from "../middlewares/admin.middleware.js";
+
 const adminMiddleware = restrictTo("ADMIN");
-const {
-  upload,
-  handleProductImageUpload,
-} = require("../services/upload.service");
+
+import {
+    upload,
+    handleProductImageUpload,
+} from "../services/upload.service.js";
 
 // ---- Public ----
 router.get("/", listProductsRules, validate, productController.getProducts);
@@ -68,4 +73,4 @@ router.post(
   handleProductImageUpload,
 );
 
-module.exports = router;
+export default router;

@@ -1,13 +1,19 @@
-const path = require("path");
-const { User, Address, Order } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const { processProfileImage } = require("../services/upload.service");
-const { sanitizeUser } = require("./auth.controller");
+import path from "path";
 
+import { User, Address, Order } from "../models/index.js";
+
+import ApiError from "../utils/ApiError.js";
+
+import ApiResponse from "../utils/ApiResponse.js";
+
+import { processProfileImage } from "../services/upload.service.js";
+
+import { sanitizeUser } from "./auth.controller.js";
 /* ---------------------------- PROFILE ---------------------------- */
 const getProfile = async (req, res) => {
-  const user = await User.findByPk(req.user.id, { include: [{ model: Address }] });
+  const user = await User.findByPk(req.user.id, {
+    include: [{ model: Address }],
+  });
   res.status(200).json(new ApiResponse(200, sanitizeUser(user)));
 };
 
@@ -19,7 +25,9 @@ const updateProfile = async (req, res) => {
   if (language !== undefined) user.language = language;
 
   await user.save();
-  res.status(200).json(new ApiResponse(200, sanitizeUser(user), "Profile updated"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, sanitizeUser(user), "Profile updated"));
 };
 
 const uploadProfileImage = async (req, res) => {
@@ -32,7 +40,15 @@ const uploadProfileImage = async (req, res) => {
   user.profileImage = relativePath;
   await user.save();
 
-  res.status(200).json(new ApiResponse(200, { profileImage: relativePath }, "Profile image updated"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { profileImage: relativePath },
+        "Profile image updated",
+      ),
+    );
 };
 
 const getOrderHistory = async (req, res) => {
@@ -47,7 +63,10 @@ const getOrderHistory = async (req, res) => {
 const listAddresses = async (req, res) => {
   const addresses = await Address.findAll({
     where: { userId: req.user.id },
-    order: [["isDefault", "DESC"], ["createdAt", "DESC"]],
+    order: [
+      ["isDefault", "DESC"],
+      ["createdAt", "DESC"],
+    ],
   });
   res.status(200).json(new ApiResponse(200, addresses));
 };
@@ -60,7 +79,10 @@ const createAddress = async (req, res) => {
   if (existingCount === 0) payload.isDefault = true;
 
   if (payload.isDefault) {
-    await Address.update({ isDefault: false }, { where: { userId: req.user.id } });
+    await Address.update(
+      { isDefault: false },
+      { where: { userId: req.user.id } },
+    );
   }
 
   const address = await Address.create(payload);
@@ -68,11 +90,16 @@ const createAddress = async (req, res) => {
 };
 
 const updateAddress = async (req, res) => {
-  const address = await Address.findOne({ where: { id: req.params.id, userId: req.user.id } });
+  const address = await Address.findOne({
+    where: { id: req.params.id, userId: req.user.id },
+  });
   if (!address) throw new ApiError(404, "Address not found");
 
   if (req.body.isDefault) {
-    await Address.update({ isDefault: false }, { where: { userId: req.user.id } });
+    await Address.update(
+      { isDefault: false },
+      { where: { userId: req.user.id } },
+    );
   }
 
   await address.update(req.body);
@@ -80,7 +107,9 @@ const updateAddress = async (req, res) => {
 };
 
 const deleteAddress = async (req, res) => {
-  const address = await Address.findOne({ where: { id: req.params.id, userId: req.user.id } });
+  const address = await Address.findOne({
+    where: { id: req.params.id, userId: req.user.id },
+  });
   if (!address) throw new ApiError(404, "Address not found");
 
   const wasDefault = address.isDefault;
@@ -99,17 +128,24 @@ const deleteAddress = async (req, res) => {
 };
 
 const setDefaultAddress = async (req, res) => {
-  const address = await Address.findOne({ where: { id: req.params.id, userId: req.user.id } });
+  const address = await Address.findOne({
+    where: { id: req.params.id, userId: req.user.id },
+  });
   if (!address) throw new ApiError(404, "Address not found");
 
-  await Address.update({ isDefault: false }, { where: { userId: req.user.id } });
+  await Address.update(
+    { isDefault: false },
+    { where: { userId: req.user.id } },
+  );
   address.isDefault = true;
   await address.save();
 
-  res.status(200).json(new ApiResponse(200, address, "Default address updated"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, address, "Default address updated"));
 };
 
-module.exports = {
+export default {
   getProfile,
   updateProfile,
   uploadProfileImage,

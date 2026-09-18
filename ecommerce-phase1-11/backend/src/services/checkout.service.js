@@ -1,9 +1,22 @@
-const { Op } = require("sequelize");
-const { sequelize, Product, ProductVariant, Order, OrderItem, Address, Coupon, CouponUsage, CartItem } = require("../models");
-const ApiError = require("../utils/ApiError");
-const deliveryZoneService = require("./deliveryZone.service"); // from Phase 5
-const couponService = require("./coupon.service");
+import { Op } from "sequelize";
 
+import {
+    sequelize,
+    Product,
+    ProductVariant,
+    Order,
+    OrderItem,
+    Address,
+    Coupon,
+    CouponUsage,
+    CartItem,
+} from "../models/index.js";
+
+import ApiError from "../utils/ApiError.js";
+
+import deliveryZoneService from "./deliveryZone.service.js"; // from Phase 5
+
+import couponService from "./coupon.service.js";
 /**
  * Turns raw CartItem rows into a priced, locked-in snapshot. Always reads
  * Product/ProductVariant fresh from the DB — never trusts whatever the
@@ -241,7 +254,7 @@ const cancelOrderAndRestoreStock = async (order, { reason = "Payment failed", st
   return order;
 };
 
-module.exports = {
+export default {
   priceCartItems,
   resolveShippingAddress,
   generateOrderNumber,

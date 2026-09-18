@@ -1,9 +1,10 @@
-const stripe = require("../config/stripe");
-const { Order, User } = require("../models");
-const checkoutService = require("../services/checkout.service");
-const { sendOrderStatusEmail } = require("../services/email.service"); // from Phase 1-2
+import stripe from "../config/stripe.js";
 
-/**
+import { Order, User } from "../models/index.js";
+
+import checkoutService from "../services/checkout.service.js";
+
+import { sendOrderStatusEmail } from "../services/email.service.js"; /**
  * POST /api/webhooks/stripe
  *
  * This is the ONLY code path that ever sets paymentStatus = "paid". The
@@ -20,7 +21,11 @@ const handleStripeWebhook = async (req, res) => {
 
   let event;
   try {
-    event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
   } catch (err) {
     console.error("Stripe webhook signature verification failed:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -30,7 +35,9 @@ const handleStripeWebhook = async (req, res) => {
     switch (event.type) {
       case "payment_intent.succeeded": {
         const pi = event.data.object;
-        const order = await Order.findOne({ where: { stripePaymentIntentId: pi.id } });
+        const order = await Order.findOne({
+          where: { stripePaymentIntentId: pi.id },
+        });
 
         // Idempotency guard — Stripe can deliver the same event more than
         // once; never double-process an already-paid order.
@@ -49,18 +56,28 @@ const handleStripeWebhook = async (req, res) => {
 
       case "payment_intent.payment_failed": {
         const pi = event.data.object;
-        const order = await Order.findOne({ where: { stripePaymentIntentId: pi.id } });
+        const order = await Order.findOne({
+          where: { stripePaymentIntentId: pi.id },
+        });
         if (order && order.status === "pending") {
-          await checkoutService.cancelOrderAndRestoreStock(order, { reason: "Payment failed", status: "cancelled" });
+          await checkoutService.cancelOrderAndRestoreStock(order, {
+            reason: "Payment failed",
+            status: "cancelled",
+          });
         }
         break;
       }
 
       case "payment_intent.canceled": {
         const pi = event.data.object;
-        const order = await Order.findOne({ where: { stripePaymentIntentId: pi.id } });
+        const order = await Order.findOne({
+          where: { stripePaymentIntentId: pi.id },
+        });
         if (order && order.status === "pending") {
-          await checkoutService.cancelOrderAndRestoreStock(order, { reason: "Payment cancelled", status: "cancelled" });
+          await checkoutService.cancelOrderAndRestoreStock(order, {
+            reason: "Payment cancelled",
+            status: "cancelled",
+          });
         }
         break;
       }
@@ -81,4 +98,4 @@ const handleStripeWebhook = async (req, res) => {
   }
 };
 
-module.exports = { handleStripeWebhook };
+export default { handleStripeWebhook };

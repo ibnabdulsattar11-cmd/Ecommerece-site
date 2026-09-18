@@ -1,11 +1,19 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const customerController = require("../../controllers/admin/customer.controller");
-const { setBlockedRules, setRoleRules } = require("../../validators/admin.validator");
-const validate = require("../../middlewares/validate.middleware");
-const { protect } = require("../../middlewares/auth.middleware");
-const { restrictTo } = require("../../middlewares/admin.middleware");
+import customerController from "../../controllers/admin/customer.controller.js";
+
+import {
+    setBlockedRules,
+    setRoleRules,
+} from "../../validators/admin.validator.js";
+
+import validate from "../../middlewares/validate.middleware.js";
+
+import { protect } from "../../middlewares/auth.middleware.js";
+
+import { restrictTo } from "../../middlewares/admin.middleware.js";
+
+const router = express.Router();
 
 router.use(protect, restrictTo("ADMIN"));
 
@@ -14,4 +22,4 @@ router.get("/:id", customerController.getCustomerById);
 router.patch("/:id/block", setBlockedRules, validate, customerController.setBlocked);
 router.patch("/:id/role", setRoleRules, validate, customerController.setRole);
 
-module.exports = router;
+export default router;

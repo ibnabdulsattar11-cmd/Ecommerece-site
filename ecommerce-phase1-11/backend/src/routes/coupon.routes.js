@@ -1,13 +1,24 @@
-const express = require("express");
+import express from "express";
+
+import couponController from "../controllers/coupon.controller.js";
+
+import {
+    validateCouponRules,
+    couponRules,
+} from "../validators/checkout.validator.js";
+
+import validate from "../middlewares/validate.middleware.js";
+
+import {
+    protect,
+    optionalAuth,
+} from "../middlewares/auth.middleware.js";
+
+import { restrictTo } from "../middlewares/admin.middleware.js";
+
+import guestCart from "../middlewares/guestCart.middleware.js"; // from Phase 4
+
 const router = express.Router();
-
-const couponController = require("../controllers/coupon.controller");
-const { validateCouponRules, couponRules } = require("../validators/checkout.validator");
-const validate = require("../middlewares/validate.middleware");
-const { protect, optionalAuth } = require("../middlewares/auth.middleware");
-const { restrictTo } = require("../middlewares/admin.middleware");
-const guestCart = require("../middlewares/guestCart.middleware"); // from Phase 4
-
 // Works for guests too (coupon preview against a guest cart), personalized
 // (per-user limits/eligibility) when logged in.
 router.post("/validate", optionalAuth, guestCart, validateCouponRules, validate, couponController.validate);
@@ -18,4 +29,4 @@ router.post("/admin", protect, restrictTo("ADMIN"), couponRules, validate, coupo
 router.patch("/admin/:id", protect, restrictTo("ADMIN"), couponRules, validate, couponController.updateCoupon);
 router.delete("/admin/:id", protect, restrictTo("ADMIN"), couponController.deleteCoupon);
 
-module.exports = router;
+export default router;

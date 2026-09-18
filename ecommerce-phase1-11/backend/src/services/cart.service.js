@@ -1,4 +1,4 @@
-const { Cart, CartItem, Product, ProductVariant, ProductImage, sequelize } = require('../models');
+import { Cart, CartItem, Product, ProductVariant, ProductImage, sequelize } from '../models';
 
 /**
  * Finds the active cart for the current request (logged-in user or guest),
@@ -98,7 +98,7 @@ async function mergeGuestCartIntoUserCart(userId, guestToken) {
   }
 }
 
-module.exports = {
+export default {
   findOrCreateCart,
   getCartWithItems,
   computeTotals,

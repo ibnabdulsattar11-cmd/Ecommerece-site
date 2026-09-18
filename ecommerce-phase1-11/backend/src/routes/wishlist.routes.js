@@ -1,25 +1,27 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const wishlistController = require("../controllers/wishlist.controller");
-const {
-  wishlistAddRules,
-  moveToCartRules,
-} = require("../validators/cart.validator");
-const validate = require("../middlewares/validate.middleware");
-const authMiddleware = require("../middlewares/auth.middleware");
+import  { addToWishlist, getWishlist, moveToCart, removeFromWishlist } from "../controllers/wishlist.controller.js";
 
+import {
+    wishlistAddRules,
+    moveToCartRules,
+} from "../validators/cart.validator.js";
+
+import validate from "../middlewares/validate.middleware.js";
+
+import authMiddleware from "../middlewares/auth.middleware.js";
 // Wishlist is tied to a user account, so every route requires login
 router.use(authMiddleware);
 
-router.get("/", wishlistController.getWishlist);
-router.post("/", wishlistAddRules, validate, wishlistController.addToWishlist);
-router.delete("/:productId", wishlistController.removeFromWishlist);
+router.get("/", getWishlist);
+router.post("/", wishlistAddRules, validate, addToWishlist);
+router.delete("/:productId", removeFromWishlist);
 router.post(
   "/:productId/move-to-cart",
   moveToCartRules,
   validate,
-  wishlistController.moveToCart,
+  moveToCart,
 );
 
-module.exports = router;
+export default router;

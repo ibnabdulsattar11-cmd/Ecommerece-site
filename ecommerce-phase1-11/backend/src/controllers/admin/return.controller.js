@@ -1,8 +1,10 @@
-const { Return, Order } = require("../../models");
-const ApiError = require("../../utils/ApiError");
-const ApiResponse = require("../../utils/ApiResponse");
-const orderTrackingService = require("../../services/orderTracking.service");
+import { Return, Order } from "../../models/index.js";
 
+import ApiError from "../../utils/ApiError.js";
+
+import ApiResponse from "../../utils/ApiResponse.js";
+
+import orderTrackingService from "../../services/orderTracking.service.js";
 // GET /api/admin/returns?status=
 const listReturns = async (req, res) => {
   const where = {};
@@ -23,8 +25,12 @@ const reviewReturn = async (req, res) => {
   const returnRequest = await Return.findByPk(req.params.id);
   if (!returnRequest) throw new ApiError(404, "Return request not found");
 
-  const updated = await orderTrackingService.reviewReturn(returnRequest, req.body, req.user.id);
+  const updated = await orderTrackingService.reviewReturn(
+    returnRequest,
+    req.body,
+    req.user.id,
+  );
   res.status(200).json(new ApiResponse(200, updated, "Return request updated"));
 };
 
-module.exports = { listReturns, reviewReturn };
+export default { listReturns, reviewReturn };

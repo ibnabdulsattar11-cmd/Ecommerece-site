@@ -1,11 +1,11 @@
-const { Product, ProductVariant, CartItem } = require('../models');
-const {
+import { Product, ProductVariant, CartItem } from "../models";
+import {
   findOrCreateCart,
   getCartWithItems,
   computeTotals,
   mergeGuestCartIntoUserCart,
-} = require('../services/cart.service');
-const { GUEST_COOKIE_NAME } = require('../middlewares/guestCart.middleware');
+} from "../services/cart.service";
+import { GUEST_COOKIE_NAME } from "../middlewares/guestCart.middleware";
 
 function serializeCart(cart) {
   const { subtotal, itemCount } = computeTotals(cart);
@@ -13,7 +13,7 @@ function serializeCart(cart) {
 }
 
 // GET /api/cart
-exports.getCart = async (req, res, next) => {
+export const getCart = async (req, res, next) => {
   try {
     const cart = await findOrCreateCart(req);
     const full = await getCartWithItems(cart.id);
@@ -24,13 +24,15 @@ exports.getCart = async (req, res, next) => {
 };
 
 // POST /api/cart/items  { productId, variantId?, quantity }
-exports.addItem = async (req, res, next) => {
+export const addItem = async (req, res, next) => {
   try {
     const { productId, variantId, quantity = 1 } = req.body;
 
     const product = await Product.findByPk(productId);
-    if (!product || product.status !== 'ACTIVE') {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+    if (!product || product.status !== "ACTIVE") {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     let variant = null;
@@ -38,16 +40,22 @@ exports.addItem = async (req, res, next) => {
     let unitPrice = parseFloat(product.salePrice || product.price);
 
     if (variantId) {
-      variant = await ProductVariant.findOne({ where: { id: variantId, productId } });
+      variant = await ProductVariant.findOne({
+        where: { id: variantId, productId },
+      });
       if (!variant) {
-        return res.status(404).json({ success: false, message: 'Variant not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "Variant not found" });
       }
       availableStock = variant.stock;
       unitPrice += parseFloat(variant.priceModifier || 0);
     }
 
     if (availableStock < quantity) {
-      return res.status(400).json({ success: false, message: 'Not enough stock available' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Not enough stock available" });
     }
 
     const cart = await findOrCreateCart(req);
@@ -66,7 +74,9 @@ exports.addItem = async (req, res, next) => {
     if (!wasCreated) {
       const newQuantity = item.quantity + quantity;
       if (newQuantity > availableStock) {
-        return res.status(400).json({ success: false, message: 'Not enough stock available' });
+        return res
+          .status(400)
+          .json({ success: false, message: "Not enough stock available" });
       }
       item.quantity = newQuantity;
       item.unitPriceSnapshot = unitPrice; // refresh price snapshot to current price
@@ -81,26 +91,40 @@ exports.addItem = async (req, res, next) => {
 };
 
 // PUT /api/cart/items/:itemId  { quantity }
-exports.updateItemQuantity = async (req, res, next) => {
+export const updateItemQuantity = async (req, res, next) => {
   try {
     const { quantity } = req.body;
     if (!Number.isInteger(quantity) || quantity < 1) {
-      return res.status(400).json({ success: false, message: 'Quantity must be a positive integer' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Quantity must be a positive integer",
+        });
     }
 
     const cart = await findOrCreateCart(req);
     const item = await CartItem.findOne({
       where: { id: req.params.itemId, cartId: cart.id },
-      include: [{ model: ProductVariant, as: 'variant' }, { model: Product, as: 'product' }],
+      include: [
+        { model: ProductVariant, as: "variant" },
+        { model: Product, as: "product" },
+      ],
     });
 
     if (!item) {
-      return res.status(404).json({ success: false, message: 'Cart item not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Cart item not found" });
     }
 
-    const availableStock = item.variant ? item.variant.stock : item.product.stock;
+    const availableStock = item.variant
+      ? item.variant.stock
+      : item.product.stock;
     if (quantity > availableStock) {
-      return res.status(400).json({ success: false, message: 'Not enough stock available' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Not enough stock available" });
     }
 
     item.quantity = quantity;
@@ -114,7 +138,7 @@ exports.updateItemQuantity = async (req, res, next) => {
 };
 
 // DELETE /api/cart/items/:itemId
-exports.removeItem = async (req, res, next) => {
+export const removeItem = async (req, res, next) => {
   try {
     const cart = await findOrCreateCart(req);
     const deleted = await CartItem.destroy({
@@ -122,7 +146,9 @@ exports.removeItem = async (req, res, next) => {
     });
 
     if (!deleted) {
-      return res.status(404).json({ success: false, message: 'Cart item not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Cart item not found" });
     }
 
     const full = await getCartWithItems(cart.id);
@@ -133,11 +159,11 @@ exports.removeItem = async (req, res, next) => {
 };
 
 // DELETE /api/cart  - clear entire cart (e.g. after order placed)
-exports.clearCart = async (req, res, next) => {
+export const clearCart = async (req, res, next) => {
   try {
     const cart = await findOrCreateCart(req);
     await CartItem.destroy({ where: { cartId: cart.id } });
-    res.json({ success: true, message: 'Cart cleared' });
+    res.json({ success: true, message: "Cart cleared" });
   } catch (err) {
     next(err);
   }
@@ -150,7 +176,7 @@ exports.clearCart = async (req, res, next) => {
  * function so Phase 2's login controller can call it directly server-side
  * instead of requiring a separate round trip.
  */
-exports.mergeCart = async (req, res, next) => {
+export const mergeCart = async (req, res, next) => {
   try {
     const guestToken = req.cookies?.[GUEST_COOKIE_NAME];
     await mergeGuestCartIntoUserCart(req.user.id, guestToken);

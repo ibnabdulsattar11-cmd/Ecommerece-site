@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require("uuid"); // already a dependency
+import { v4 as uuidv4 } from "uuid"; // already a dependency
 
 // Lets you grep logs (and tell a customer "give me the X-Request-Id from
 // your error") to find the exact request across access logs and error
@@ -9,4 +9,4 @@ const requestId = (req, res, next) => {
   next();
 };
 
-module.exports = requestId;
+export default requestId;

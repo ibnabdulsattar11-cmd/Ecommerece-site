@@ -1,22 +1,33 @@
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const { User } = require("../models");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const {
+import { User } from "../models";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse";
+
+import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
   hashToken,
   generateRandomToken,
-} = require("../utils/token");
-const { refreshCookieOptions } = require("../utils/cookieOptions");
-const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/email.service");
+} from "../utils/token";
+
+import { refreshCookieOptions } from "../utils/cookieOptions";
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+} from "../services/email.service";
 
 const SALT_ROUNDS = 12;
 
 const sanitizeUser = (user) => {
-  const { password, refreshTokenHash, resetPasswordToken, emailVerifyToken, ...safe } = user.toJSON();
+  const {
+    password,
+    refreshTokenHash,
+    resetPasswordToken,
+    emailVerifyToken,
+    ...safe
+  } = user.toJSON();
   return safe;
 };
 
@@ -38,9 +49,17 @@ const register = async (req, res) => {
   const { name, email, phone, password } = req.body;
 
   const existing = await User.findOne({
-    where: { [Op.or]: [email ? { email } : null, phone ? { phone } : null].filter(Boolean) },
+    where: {
+      [Op.or]: [email ? { email } : null, phone ? { phone } : null].filter(
+        Boolean,
+      ),
+    },
   });
-  if (existing) throw new ApiError(409, "An account with this email or phone already exists");
+  if (existing)
+    throw new ApiError(
+      409,
+      "An account with this email or phone already exists",
+    );
 
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
   const emailVerifyToken = email ? generateRandomToken() : null;
@@ -51,7 +70,9 @@ const register = async (req, res) => {
     phone: phone || null,
     password: hashedPassword,
     emailVerifyToken,
-    emailVerifyExpires: email ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
+    emailVerifyExpires: email
+      ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+      : null,
     isVerified: !email, // phone-only signups treated as verified for now (SMS OTP can be added later)
   });
 
@@ -60,7 +81,15 @@ const register = async (req, res) => {
   }
 
   const accessToken = await issueTokens(res, user);
-  res.status(201).json(new ApiResponse(201, { user: sanitizeUser(user), accessToken }, "Registered successfully"));
+  res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        { user: sanitizeUser(user), accessToken },
+        "Registered successfully",
+      ),
+    );
 };
 
 /* ------------------------------ LOGIN ------------------------------ */
@@ -80,7 +109,15 @@ const login = async (req, res) => {
   if (user.isBlocked) throw new ApiError(403, "Your account has been blocked");
 
   const accessToken = await issueTokens(res, user);
-  res.status(200).json(new ApiResponse(200, { user: sanitizeUser(user), accessToken }, "Logged in successfully"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { user: sanitizeUser(user), accessToken },
+        "Logged in successfully",
+      ),
+    );
 };
 
 /* ------------------------------ LOGOUT ------------------------------ */
@@ -89,7 +126,10 @@ const logout = async (req, res) => {
   if (token) {
     try {
       const decoded = verifyRefreshToken(token);
-      await User.update({ refreshTokenHash: null }, { where: { id: decoded.id } });
+      await User.update(
+        { refreshTokenHash: null },
+        { where: { id: decoded.id } },
+      );
     } catch (err) {
       // token already invalid/expired - nothing to revoke
     }
@@ -115,18 +155,26 @@ const refresh = async (req, res) => {
 
   const user = await User.findByPk(decoded.id);
   if (!user || user.refreshTokenHash !== hashToken(token)) {
-    throw new ApiError(401, "Refresh token has been revoked. Please log in again");
+    throw new ApiError(
+      401,
+      "Refresh token has been revoked. Please log in again",
+    );
   }
 
   const accessToken = await issueTokens(res, user);
-  res.status(200).json(new ApiResponse(200, { accessToken }, "Token refreshed"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, { accessToken }, "Token refreshed"));
 };
 
 /* ---------------------------- VERIFY EMAIL ---------------------------- */
 const verifyEmail = async (req, res) => {
   const { token } = req.body;
   const user = await User.findOne({
-    where: { emailVerifyToken: token, emailVerifyExpires: { [Op.gt]: new Date() } },
+    where: {
+      emailVerifyToken: token,
+      emailVerifyExpires: { [Op.gt]: new Date() },
+    },
   });
   if (!user) throw new ApiError(400, "Invalid or expired verification link");
 
@@ -135,7 +183,9 @@ const verifyEmail = async (req, res) => {
   user.emailVerifyExpires = null;
   await user.save();
 
-  res.status(200).json(new ApiResponse(200, null, "Email verified successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Email verified successfully"));
 };
 
 /* ---------------------------- FORGOT PASSWORD ---------------------------- */
@@ -152,7 +202,15 @@ const forgotPassword = async (req, res) => {
     await sendPasswordResetEmail(user, resetToken);
   }
 
-  res.status(200).json(new ApiResponse(200, null, "If that email exists, a reset link has been sent"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "If that email exists, a reset link has been sent",
+      ),
+    );
 };
 
 /* ---------------------------- RESET PASSWORD ---------------------------- */
@@ -161,7 +219,10 @@ const resetPassword = async (req, res) => {
   const hashed = hashToken(token);
 
   const user = await User.findOne({
-    where: { resetPasswordToken: hashed, resetPasswordExpires: { [Op.gt]: new Date() } },
+    where: {
+      resetPasswordToken: hashed,
+      resetPasswordExpires: { [Op.gt]: new Date() },
+    },
   });
   if (!user) throw new ApiError(400, "Invalid or expired reset link");
 
@@ -171,7 +232,15 @@ const resetPassword = async (req, res) => {
   user.refreshTokenHash = null; // force re-login on all devices after password reset
   await user.save();
 
-  res.status(200).json(new ApiResponse(200, null, "Password reset successfully. Please log in again"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "Password reset successfully. Please log in again",
+      ),
+    );
 };
 
 /* ---------------------------- CHANGE PASSWORD ---------------------------- */
@@ -187,7 +256,9 @@ const changePassword = async (req, res) => {
   await user.save();
 
   res.clearCookie("refreshToken", { path: "/api/auth" });
-  res.status(200).json(new ApiResponse(200, null, "Password changed. Please log in again"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password changed. Please log in again"));
 };
 
 /* ------------------------- GOOGLE OAUTH CALLBACK ------------------------- */
@@ -197,11 +268,11 @@ const googleCallback = async (req, res) => {
   const accessToken = await issueTokens(res, user);
   // Redirect back to frontend with the access token; frontend stores it in memory/state.
   res.redirect(
-    `${process.env.CLIENT_URL}/${user.language || "en"}/auth/callback?accessToken=${accessToken}`
+    `${process.env.CLIENT_URL}/${user.language || "en"}/auth/callback?accessToken=${accessToken}`,
   );
 };
 
-module.exports = {
+export default {
   register,
   login,
   logout,
