@@ -1,0 +1,13 @@
+// sequelize-cli itself is a CommonJS tool and loads this file (and the
+// config it points to) via require() regardless of this project's own
+// "type": "module" — so this file and config/config.cjs must stay valid
+// CommonJS. That's also why config.cjs uses the .cjs extension: it forces
+// CommonJS parsing no matter what package.json says.
+const path = require("path");
+
+module.exports = {
+  config: path.resolve("src/config", "config.cjs"),
+  "models-path": path.resolve("src", "models"),
+  "seeders-path": path.resolve("src", "seeders"),
+  "migrations-path": path.resolve("src", "migrations"),
+};
