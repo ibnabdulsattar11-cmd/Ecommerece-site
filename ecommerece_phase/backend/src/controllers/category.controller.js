@@ -62,6 +62,7 @@ import { Op } from 'sequelize';
     const category = await Category.create({
       nameEn,
       nameAr,
+      slug,
       descriptionEn,
       descriptionAr,
       parentId: parentId || null,

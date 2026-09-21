@@ -12,7 +12,10 @@ export default (sequelize) => {
       nameEn: { type: DataTypes.STRING, allowNull: false },
       nameAr: { type: DataTypes.STRING, allowNull: false },
       slug: { type: DataTypes.STRING, allowNull: false, unique: true },
+      descriptionEn: { type: DataTypes.TEXT, allowNull: true },
+      descriptionAr: { type: DataTypes.TEXT, allowNull: true },
       image: { type: DataTypes.STRING, allowNull: true },
+      sortOrder: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
       parentId: {
         type: DataTypes.UUID,
