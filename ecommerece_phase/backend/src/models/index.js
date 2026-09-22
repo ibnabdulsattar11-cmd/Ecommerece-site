@@ -64,16 +64,20 @@ Category.hasMany(Category, { as: "subcategories", foreignKey: "parentId" });
 Category.belongsTo(Category, { as: "parent", foreignKey: "parentId" });
 
 Category.hasMany(Product, { foreignKey: "categoryId" });
-Product.belongsTo(Category, { foreignKey: "categoryId", 	as : "category"});
+Product.belongsTo(Category, { foreignKey: "categoryId", as: "category" });
 
 /* ---------------------- PRODUCT ---------------------- */
-Product.hasMany(ProductImage, { foreignKey: "productId", onDelete: "CASCADE",as: "images" });
+Product.hasMany(ProductImage, {
+  foreignKey: "productId",
+  onDelete: "CASCADE",
+  as: "images",
+});
 ProductImage.belongsTo(Product, { foreignKey: "productId" });
 
 Product.hasMany(ProductVariant, {
-  as: "variants",
   foreignKey: "productId",
   onDelete: "CASCADE",
+  as: "variants",
 });
 ProductVariant.belongsTo(Product, { foreignKey: "productId" });
 
@@ -97,14 +101,18 @@ InventoryLog.belongsTo(User, {
 });
 
 /* ---------------------- CART ---------------------- */
-Cart.hasMany(CartItem, { foreignKey: "cartId", onDelete: "CASCADE", as: "items" });
+Cart.hasMany(CartItem, {
+  foreignKey: "cartId",
+  onDelete: "CASCADE",
+  as: "items",
+});
 CartItem.belongsTo(Cart, { foreignKey: "cartId" });
 
 Product.hasMany(CartItem, { foreignKey: "productId" });
 CartItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
 
 ProductVariant.hasMany(CartItem, { foreignKey: "variantId" });
-CartItem.belongsTo(ProductVariant, { foreignKey: "variantId" });
+CartItem.belongsTo(ProductVariant, { foreignKey: "variantId", as: "variant" });
 
 /* ---------------------- ORDER ---------------------- */
 // near the top, with the other requires:
