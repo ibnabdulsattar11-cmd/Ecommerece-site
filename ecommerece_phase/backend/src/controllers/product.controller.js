@@ -55,7 +55,6 @@ const getProducts = async (req, res, next) => {
         const categoryIds = [category.id, ...children.map((c) => c.id)];
         where.categoryId = { [Op.in]: categoryIds };
       } else {
-        // unknown category slug -> empty result set, not an error
         return res.json({
           success: true,
           data: [],
@@ -110,7 +109,7 @@ const getProducts = async (req, res, next) => {
       order,
       limit,
       offset,
-      distinct: true, // needed for correct count with hasMany includes
+      distinct: true, 
     });
 
     res.json({

@@ -5,7 +5,7 @@ import { verifyAccessToken } from "../utils/token.js";
 import { User } from "../models/index.js";
 // Verifies the access token from the Authorization header and attaches
 // the authenticated user to req.user. Does NOT touch the refresh token.
-export const protect = async (req, res, next) => {
+ const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

@@ -54,8 +54,6 @@ const listCities = async (req, res) => {
 };
 
 /* ---------------------------- ADMIN (delivery zone management) ---------------------------- */
-// Basic CRUD so zones can actually be populated/tested before Phase 9's
-// admin panel gives it a proper UI.
 
 const listZones = async (req, res) => {
   const zones = await DeliveryZone.findAll({

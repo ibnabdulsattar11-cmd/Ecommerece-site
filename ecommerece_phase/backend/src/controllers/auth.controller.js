@@ -31,8 +31,6 @@ const sanitizeUser = (user) => {
   return safe;
 };
 
-// Issues a fresh access+refresh token pair, rotates the stored refresh
-// token hash, and sets the refresh token as an httpOnly cookie.
 const issueTokens = async (res, user) => {
   const accessToken = generateAccessToken(user.id, user.role);
   const refreshToken = generateRefreshToken(user.id);
@@ -73,11 +71,16 @@ const register = async (req, res) => {
     emailVerifyExpires: email
       ? new Date(Date.now() + 24 * 60 * 60 * 1000)
       : null,
-    isVerified: !email, // phone-only signups treated as verified for now (SMS OTP can be added later)
+    isVerified: !email, 
   });
 
   if (email) {
-    await sendVerificationEmail(user, emailVerifyToken);
+    try {
+      await sendVerificationEmail(user, emailVerifyToken);
+    } catch (err) {
+
+      console.error("Failed to send verification email:", err);
+    }
   }
 
   const accessToken = await issueTokens(res, user);
@@ -100,7 +103,6 @@ const login = async (req, res) => {
     where: { [Op.or]: [{ email: identifier }, { phone: identifier }] },
   });
 
-  // Same error for "not found" and "wrong password" to avoid user enumeration.
   if (!user || !user.password) throw new ApiError(401, "Invalid credentials");
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -131,7 +133,6 @@ const logout = async (req, res) => {
         { where: { id: decoded.id } },
       );
     } catch (err) {
-      // token already invalid/expired - nothing to revoke
     }
   }
   res.clearCookie("refreshToken", { path: "/api/auth" });
@@ -139,9 +140,6 @@ const logout = async (req, res) => {
 };
 
 /* ------------------------- REFRESH TOKEN ------------------------- */
-// Rotation: every refresh issues a brand new refresh token and invalidates
-// the old one. If a token is reused after rotation (stolen + replayed),
-// the hash won't match and the session is rejected.
 const refresh = async (req, res) => {
   const token = req.cookies?.refreshToken;
   if (!token) throw new ApiError(401, "No refresh token provided");
@@ -193,13 +191,16 @@ const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ where: { email } });
 
-  // Always respond with success to avoid leaking whether an email is registered.
   if (user) {
     const resetToken = generateRandomToken();
-    user.resetPasswordToken = hashToken(resetToken); // store hashed, single-use
-    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    user.resetPasswordToken = hashToken(resetToken); 
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
     await user.save();
-    await sendPasswordResetEmail(user, resetToken);
+    try {
+      await sendPasswordResetEmail(user, resetToken);
+    } catch (err) {
+      console.error("Failed to send password reset email:", err);
+    }
   }
 
   res
@@ -227,9 +228,9 @@ const resetPassword = async (req, res) => {
   if (!user) throw new ApiError(400, "Invalid or expired reset link");
 
   user.password = await bcrypt.hash(password, SALT_ROUNDS);
-  user.resetPasswordToken = null; // single-use: cleared immediately
+  user.resetPasswordToken = null; 
   user.resetPasswordExpires = null;
-  user.refreshTokenHash = null; // force re-login on all devices after password reset
+  user.refreshTokenHash = null; 
   await user.save();
 
   res
@@ -262,11 +263,9 @@ const changePassword = async (req, res) => {
 };
 
 /* ------------------------- GOOGLE OAUTH CALLBACK ------------------------- */
-// Called by passport after successful Google auth (req.user set by passport strategy).
 const googleCallback = async (req, res) => {
   const user = req.user;
   const accessToken = await issueTokens(res, user);
-  // Redirect back to frontend with the access token; frontend stores it in memory/state.
   res.redirect(
     `${process.env.CLIENT_URL}/${user.language || "en"}/auth/callback?accessToken=${accessToken}`,
   );

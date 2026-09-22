@@ -47,9 +47,7 @@ const createPaymentIntent = async (req, res) => {
       }),
     );
   } catch (err) {
-    // Stripe failed after stock/coupon were already reserved — undo both
-    // so nothing is left dangling on a customer who never got a working
-    // checkout screen.
+
     await checkoutService.cancelOrderAndRestoreStock(order, {
       reason: "Could not start payment",
     });

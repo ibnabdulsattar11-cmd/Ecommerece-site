@@ -110,8 +110,6 @@ const setBlocked = async (req, res) => {
 };
 
 // PATCH /api/admin/customers/:id/role   { role: "USER" | "ADMIN" }
-// Separate from the generic customer endpoints on purpose — promoting
-// someone to ADMIN is a sensitive action worth its own explicit route.
 const setRole = async (req, res) => {
   if (req.params.id === req.user.id) {
     throw new ApiError(400, "You cannot change your own role");

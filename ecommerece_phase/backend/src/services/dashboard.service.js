@@ -73,7 +73,7 @@ const getRevenueTimeseries = async (days = 30) => {
 
   const rows = await Order.findAll({
     attributes: [
-      [fn("DATE", col("createdAt")), "date"],
+      [fn("DATE", col("created_at")), "date"],
       [fn("COALESCE", fn("SUM", col("total")), 0), "revenue"],
       [fn("COUNT", col("id")), "orders"],
     ],
@@ -81,8 +81,8 @@ const getRevenueTimeseries = async (days = 30) => {
       status: { [Op.notIn]: REVENUE_EXCLUDED_STATUSES },
       createdAt: { [Op.gte]: since },
     },
-    group: [fn("DATE", col("createdAt"))],
-    order: [[fn("DATE", col("createdAt")), "ASC"]],
+    group: [fn("DATE", col("created_at"))],
+    order: [[fn("DATE", col("created_at")), "ASC"]],
     raw: true,
   });
 
@@ -101,7 +101,7 @@ const getTopProducts = async (limit = 10) => {
     attributes: [
       "productId",
       [fn("SUM", col("quantity")), "unitsSold"],
-      [fn("SUM", literal(`"quantity" * "paidUnitPrice"`)), "revenue"],
+      [fn("SUM", literal(`"quantity" * "paid_unit_price"`)), "revenue"],
     ],
     include: [
       {
@@ -110,7 +110,7 @@ const getTopProducts = async (limit = 10) => {
         attributes: [],
       },
     ],
-    group: ["OrderItem.productId"],
+    group: ["OrderItem.product_id"],
     order: [[literal('"unitsSold"'), "DESC"]],
     limit,
     raw: true,

@@ -12,7 +12,6 @@ import {
 const reviewerInclude = { model: User, attributes: ["id", "name"] };
 
 // GET /api/products/:productId/reviews?page=&limit=&rating=
-// Public — only ever shows APPROVED reviews, plus a star-count breakdown.
 const listProductReviews = async (req, res) => {
   const { productId } = req.params;
   const page = Math.max(parseInt(req.query.page) || 1, 1);
@@ -89,7 +88,6 @@ const createReview = async (req, res) => {
 };
 
 // PATCH /api/products/:productId/reviews/:id  { rating?, comment?, images? }
-// Owner only. Editing sends it back through moderation.
 const updateReview = async (req, res) => {
   const review = await Review.findOne({
     where: { id: req.params.id, productId: req.params.productId },
@@ -141,9 +139,6 @@ const deleteReview = async (req, res) => {
 };
 
 // POST /api/products/:productId/reviews/:id/helpful  { helpful: true|false }
-// Best-effort — there's no per-user vote table, so this doesn't stop
-// someone voting more than once. Fine for a lightweight "was this
-// helpful" signal; add a join table later if abuse becomes a problem.
 const voteHelpful = async (req, res) => {
   const review = await Review.findOne({
     where: { id: req.params.id, productId: req.params.productId },

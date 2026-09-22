@@ -169,10 +169,6 @@ function serializeCart(cart) {
 
 /**
  * POST /api/cart/merge
- * Called by the frontend right after a successful login/register, while
- * the guest_cart_token cookie is still present. Also exported as a plain
- * function so Phase 2's login controller can call it directly server-side
- * instead of requiring a separate round trip.
  */
  const mergeCart = async (req, res, next) => {
   try {

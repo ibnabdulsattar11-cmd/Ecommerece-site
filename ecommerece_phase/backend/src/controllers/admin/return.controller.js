@@ -20,7 +20,6 @@ const listReturns = async (req, res) => {
 };
 
 // PATCH /api/admin/returns/:id  { status, adminNote?, refundAmount? }
-// status: "approved" | "rejected" | "received" | "completed"
 const reviewReturn = async (req, res) => {
   const returnRequest = await Return.findByPk(req.params.id);
   if (!returnRequest) throw new ApiError(404, "Return request not found");

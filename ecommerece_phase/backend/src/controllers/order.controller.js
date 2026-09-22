@@ -3,8 +3,7 @@ import { Order, OrderItem, Address, OrderStatusHistory, Return } from "../models
 import ApiError from "../utils/ApiError.js";
 
 import ApiResponse from "../utils/ApiResponse.js";
-// Extends Phase 6's fullInclude with the tracking timeline and any return
-// request, so the order detail page has everything in one call.
+
 const fullInclude = [
   { model: OrderItem, as: "OrderItems" },
   { model: Address, as: "Address" },
@@ -40,9 +39,6 @@ const getOrderById = async (req, res) => {
 
 /**
  * GET /api/orders/by-number/:orderNumber
- * Used by the checkout success page right after the Stripe redirect, and
- * by guests (no account) to look up the order they just placed — the
- * unguessable order number is the access control in that case.
  */
 const getOrderByNumber = async (req, res) => {
   const where = { orderNumber: req.params.orderNumber };

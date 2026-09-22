@@ -11,8 +11,6 @@ import checkoutService from "../services/checkout.service.js";
 import couponService from "../services/coupon.service.js";
 
 // POST /api/coupons/validate  { code }
-// Validates against the caller's actual live cart — never a client-supplied
-// subtotal — so the preview always matches what checkout will compute.
 const validate = async (req, res) => {
   const { code } = req.body;
 

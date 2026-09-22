@@ -1,6 +1,6 @@
 "use strict";
 import analyticsService from "../services/analytics.service.js";
-import resolveDateRange from "../utils/dateRange.util.js";
+import { resolveDateRange } from "../utils/dateRange.util.js";
 
  const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);

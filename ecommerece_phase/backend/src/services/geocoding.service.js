@@ -1,4 +1,4 @@
-import ApiError from "../utils/ApiError";
+import ApiError from "../utils/ApiError.js";
 
 const NOMINATIM_BASE_URL =
   process.env.NOMINATIM_BASE_URL || "https://nominatim.openstreetmap.org";
@@ -10,12 +10,7 @@ const USER_AGENT =
   process.env.NOMINATIM_USER_AGENT ||
   "bilingual-ecommerce-app/1.0 (set NOMINATIM_USER_AGENT in .env)";
 
-// Free public Nominatim caps usage at ~1 request/second. We enforce a simple
-// in-process queue so a burst of user activity (typing in the search box,
-// dragging the map pin) never breaks that limit. If traffic grows beyond a
-// small app, swap this service for a paid provider (LocationIQ, Mapbox,
-// Google Geocoding) — reverseGeocode()/searchAddress() signatures can stay
-// the same, only the fetch call inside nominatimFetch() changes.
+
 let lastRequestAt = 0;
 const MIN_INTERVAL_MS = 1100;
 
@@ -37,8 +32,6 @@ const nominatimFetch = async (path, params) => {
 
   let response;
   try {
-    // Requires Node 18+ (global fetch). Project already assumes a modern
-    // Node LTS for the rest of the stack, so no extra dependency is added.
     response = await fetch(url.toString(), {
       headers: {
         "User-Agent": USER_AGENT,
@@ -56,8 +49,7 @@ const nominatimFetch = async (path, params) => {
   return response.json();
 };
 
-// Normalizes Nominatim's inconsistent `address` object into a flat shape
-// that matches our Address model's fields as closely as possible.
+
 const normalizeAddress = (raw) => {
   const a = raw.address || {};
   return {
@@ -72,7 +64,6 @@ const normalizeAddress = (raw) => {
   };
 };
 
-// lat/lng -> structured address (used after "use my location" or map drag)
 const reverseGeocode = async (latitude, longitude, locale = "en") => {
   const data = await nominatimFetch("/reverse", {
     format: "jsonv2",

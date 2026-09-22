@@ -33,7 +33,6 @@ const listOrders = async (req, res) => {
 };
 
 // PATCH /api/admin/orders/:id/status
-// { status?, note?, trackingNumber?, courierName?, trackingUrl?, estimatedDeliveryDate? }
 const updateOrderStatus = async (req, res) => {
   const order = await orderTrackingService.updateOrderStatus(
     req.params.id,

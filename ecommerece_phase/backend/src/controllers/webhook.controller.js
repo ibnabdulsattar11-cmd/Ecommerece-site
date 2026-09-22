@@ -29,8 +29,6 @@ const handleStripeWebhook = async (req, res) => {
           where: { stripePaymentIntentId: pi.id },
         });
 
-        // Idempotency guard — Stripe can deliver the same event more than
-        // once; never double-process an already-paid order.
         if (order && order.paymentStatus !== "paid") {
           order.paymentStatus = "paid";
           order.status = "confirmed";
@@ -76,14 +74,9 @@ const handleStripeWebhook = async (req, res) => {
         break; // other event types are fine to ignore
     }
 
-    // Acknowledge once the signature is verified — 200 tells Stripe not to
-    // retry. Intentionally-ignored cases (no matching order, etc.) still
-    // resolve as 200 above.
     res.status(200).json({ received: true });
   } catch (err) {
     console.error("Stripe webhook handler error:", err);
-    // Non-2xx here makes Stripe retry with backoff — appropriate for a
-    // transient failure (e.g. DB hiccup) on our side.
     res.status(500).json({ received: false });
   }
 };

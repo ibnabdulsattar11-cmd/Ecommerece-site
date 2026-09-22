@@ -2,7 +2,6 @@ import ApiResponse from "../../utils/ApiResponse.js";
 
 import dashboardService from "../../services/dashboard.service.js";
 
-// GET /api
 // GET /api/admin/dashboard  — everything the dashboard landing page needs in one call
 const getDashboard = async (req, res) => {
   const [

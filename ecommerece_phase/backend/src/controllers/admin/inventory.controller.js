@@ -35,7 +35,6 @@ const listLowStock = async (req, res) => {
 };
 
 // PATCH /api/admin/inventory/:productId/stock
-// { variantId?, delta, changeType: "restock"|"correction"|"return"|"damage"|"other", note? }
 const adjustStock = async (req, res) => {
   const { variantId, delta, changeType, note } = req.body;
 

@@ -19,7 +19,7 @@ const listReviews = async (req, res) => {
       { model: User, attributes: ["id", "name", "email"] },
       { model: Product, attributes: ["id", "nameEn", "slug"] },
     ],
-    order: [["createdAt", "ASC"]], // oldest-pending-first, matches a moderation queue
+    order: [["createdAt", "ASC"]], 
     limit,
     offset: (page - 1) * limit,
   });
