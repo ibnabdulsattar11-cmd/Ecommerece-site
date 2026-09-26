@@ -16,5 +16,50 @@ html[dir="ltr"] body {
 }
 
 /* Logical properties keep spacing correct in both LTR and RTL automatically.
-   Prefer Tailwind's ms-*/me-*/ps-*/pe-* (margin/padding-inline-start/end)
-   over ml-*/mr-* and pl-*/pr-* throughout the app. */
+   Prefer Tailwind's ms- / me- / ps- / pe- (margin/padding-inline-start/end)
+   over ml- / mr- and pl- / pr- throughout the app. */
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+  a {
+    @apply transition-colors;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary-400 ring-offset-2;
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight text-gray-900;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800;
+  }
+  .btn-accent {
+    @apply btn bg-accent text-primary-900 hover:bg-accent-500;
+  }
+  .btn-outline {
+    @apply btn border border-gray-300 bg-white text-gray-700 hover:bg-gray-50;
+  }
+  .btn-danger {
+    @apply btn bg-danger text-white hover:bg-red-700;
+  }
+  .card {
+    @apply rounded-xl2 border border-gray-100 bg-white shadow-card;
+  }
+  .input {
+    @apply w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-gray-700;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}

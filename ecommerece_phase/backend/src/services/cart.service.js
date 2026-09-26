@@ -118,7 +118,7 @@ async function mergeGuestCartIntoUserCart(userId, guestToken) {
   }
 }
 
-export default {
+export  {
   findOrCreateCart,
   getCartWithItems,
   computeTotals,

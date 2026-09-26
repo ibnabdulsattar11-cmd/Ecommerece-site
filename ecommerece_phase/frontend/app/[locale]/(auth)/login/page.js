@@ -26,57 +26,52 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
-      <h1 className="mb-6 text-2xl font-bold text-primary">Login</h1>
+    <main className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-6 py-12">
+      <div className="card p-8">
+        <h1 className="mb-1 text-2xl font-bold text-gray-900">Welcome back</h1>
+        <p className="mb-6 text-sm text-gray-500">Log in to continue shopping.</p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium">Email or Phone</label>
-          <input
-            {...register("identifier", { required: true })}
-            className="w-full rounded border px-3 py-2"
-            placeholder="you@example.com"
-          />
-          {errors.identifier && <p className="mt-1 text-sm text-red-600">This field is required</p>}
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <div>
+            <label className="label">Email or Phone</label>
+            <input
+              {...register("identifier", { required: true })}
+              className="input"
+              placeholder="you@example.com"
+            />
+            {errors.identifier && <p className="mt-1 text-sm text-danger">This field is required</p>}
+          </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium">Password</label>
-          <input
-            type="password"
-            {...register("password", { required: true })}
-            className="w-full rounded border px-3 py-2"
-          />
-          {errors.password && <p className="mt-1 text-sm text-red-600">Password is required</p>}
-        </div>
+          <div>
+            <label className="label">Password</label>
+            <input type="password" {...register("password", { required: true })} className="input" />
+            {errors.password && <p className="mt-1 text-sm text-danger">Password is required</p>}
+          </div>
 
-        {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+          {serverError && <p className="text-sm text-danger">{serverError}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="mt-2 rounded-lg bg-primary py-2 text-white hover:bg-primary-dark disabled:opacity-50"
-        >
-          {submitting ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          <button type="submit" disabled={submitting} className="btn-primary mt-1">
+            {submitting ? "Logging in…" : "Log In"}
+          </button>
+        </form>
 
-      <div className="mt-4 flex flex-col gap-2 text-sm">
-        <Link href="/forgot-password" className="text-primary hover:underline">
-          Forgot password?
-        </Link>
-        <a
-          href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/google`}
-          className="rounded border py-2 text-center hover:bg-gray-50"
-        >
-          Continue with Google
-        </a>
-        <p>
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Register
+        <div className="mt-5 flex flex-col gap-3 text-sm">
+          <Link href="/forgot-password" className="text-primary-600 hover:underline">
+            Forgot password?
           </Link>
-        </p>
+          <a
+            href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/google`}
+            className="btn-outline"
+          >
+            Continue with Google
+          </a>
+          <p className="text-gray-600">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="font-medium text-primary-600 hover:underline">
+              Register
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

@@ -1,0 +1,11 @@
+{
+  "/[locale]/(shop)/products/page": "app/[locale]/(shop)/products/page.js",
+  "/[locale]/admin/page": "app/[locale]/admin/page.js",
+  "/[locale]/admin/products/page": "app/[locale]/admin/products/page.js",
+  "/[locale]/admin/categories/page": "app/[locale]/admin/categories/page.js",
+  "/[locale]/admin/inventory/page": "app/[locale]/admin/inventory/page.js",
+  "/[locale]/admin/orders/page": "app/[locale]/admin/orders/page.js",
+  "/[locale]/admin/customers/page": "app/[locale]/admin/customers/page.js",
+  "/[locale]/admin/coupons/page": "app/[locale]/admin/coupons/page.js",
+  "/[locale]/admin/reviews/page": "app/[locale]/admin/reviews/page.js"
+}
